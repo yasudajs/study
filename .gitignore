@@ -11,6 +11,10 @@ venv37/
 dist/
 build/
 
+# Environment variables
+.env
+.env.local
+
 # IDE
 .vscode/
 .idea/
