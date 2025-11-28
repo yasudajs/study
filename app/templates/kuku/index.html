@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}九九練習 - 掛け算練習アプリ{% endblock %}
+{% block title %}九九練習 - かけ算練習アプリ{% endblock %}
 
-{% block description %}小学生向け九九（掛け算）練習アプリ。1×1～9×9を楽しく練習できます。{% endblock %}
+{% block description %}小学生向け九九（かけ算）練習アプリ。1×1～9×9を楽しく練習できます。{% endblock %}
 
 {% block content %}
 <div class="kuku-app">
@@ -14,11 +14,11 @@
     <main class="app-main">
         <!-- 画面1: レベル選択 -->
         <div id="screen-select-level" class="screen active">
-            <h2>掛ける数（段）を選択してください</h2>
+            <h2>かける数を選択してください</h2>
             <div class="level-buttons">
                 {% for level in range(1, 10) %}
                 <button class="level-btn" data-level="{{ level }}">
-                    {{ level }}段
+                    {{ level }}の段
                 </button>
                 {% endfor %}
             </div>
