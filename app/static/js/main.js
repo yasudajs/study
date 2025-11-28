@@ -11,6 +11,7 @@ class KukuApp {
         this.scorer = null;
         this.sessionId = null;
         this.stateManager = new StateManager();
+        this.currentAnswer = '';  // 現在の入力値
         
         // 初期化
         this.init();
@@ -227,7 +228,8 @@ class KukuApp {
             });
 
             if (!response.ok) {
-                throw new Error('Session creation failed');
+                const errorData = await response.json();
+                throw new Error(`Session creation failed: ${JSON.stringify(errorData)}`);
             }
 
             const data = await response.json();
@@ -254,7 +256,7 @@ class KukuApp {
 
         } catch (error) {
             console.error('Error starting quiz:', error);
-            alert('クイズ開始時にエラーが発生しました');
+            alert('クイズ開始時にエラーが発生しました: ' + error.message);
         }
     }
 
@@ -282,10 +284,12 @@ class KukuApp {
         progress.max = totalNum;
         progress.value = currentNum;
 
-        // 入力フォーカス
-        const answerInput = document.getElementById('answer-input');
-        answerInput.value = '';
-        answerInput.focus();
+        // 答え欄をリセット
+        this.currentAnswer = '';
+        const quizAnswer = document.getElementById('quiz-answer');
+        if (quizAnswer) {
+            quizAnswer.textContent = '?';
+        }
 
         // フィードバッククリア
         document.getElementById('feedback').innerHTML = '';
@@ -298,11 +302,13 @@ class KukuApp {
      * 数値をインプットに追加
      */
     addNumberToInput(number) {
-        const answerInput = document.getElementById('answer-input');
-        if (answerInput) {
-            // 最大2桁（81が最大値）
-            if (answerInput.value.length < 2) {
-                answerInput.value += number;
+        const quizAnswer = document.getElementById('quiz-answer');
+        // 最大2桁（81が最大値）
+        if (this.currentAnswer.length < 2) {
+            this.currentAnswer += number;
+            // 問題文の「?」を入力値に更新
+            if (quizAnswer) {
+                quizAnswer.textContent = this.currentAnswer;
             }
         }
     }
@@ -311,17 +317,18 @@ class KukuApp {
      * インプットをクリア
      */
     clearNumberInput() {
-        const answerInput = document.getElementById('answer-input');
-        if (answerInput) {
-            answerInput.value = '';
+        const quizAnswer = document.getElementById('quiz-answer');
+        this.currentAnswer = '';
+        // 問題文の「?」をリセット
+        if (quizAnswer) {
+            quizAnswer.textContent = '?';
         }
     }
 
     submitAnswer() {
         if (!this.quizLogic || !this.scorer) return;
 
-        const answerInput = document.getElementById('answer-input');
-        const userAnswer = answerInput.value.trim();
+        const userAnswer = this.currentAnswer.trim();
 
         if (userAnswer === '') {
             alert('答えを入力してください');
