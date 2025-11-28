@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- 背景 -->
+  <rect width="200" height="200" fill="#667eea" rx="20"/>
+  
+  <!-- 白いグリッド背景 -->
+  <rect x="30" y="30" width="140" height="140" fill="white" rx="10"/>
+  
+  <!-- グリッドラインと数字 -->
+  <!-- 行1 -->
+  <text x="55" y="70" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">1</text>
+  <text x="100" y="70" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">2</text>
+  <text x="145" y="70" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">3</text>
+  
+  <!-- 行2 -->
+  <text x="55" y="110" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">4</text>
+  <text x="100" y="110" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">5</text>
+  <text x="145" y="110" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">6</text>
+  
+  <!-- 行3 -->
+  <text x="55" y="150" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">7</text>
+  <text x="100" y="150" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">8</text>
+  <text x="145" y="150" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">9</text>
+  
+  <!-- グリッドラインの縦線 -->
+  <line x1="70" y1="35" x2="70" y2="165" stroke="#ddd" stroke-width="1"/>
+  <line x1="130" y1="35" x2="130" y2="165" stroke="#ddd" stroke-width="1"/>
+  
+  <!-- グリッドラインの横線 -->
+  <line x1="35" y1="85" x2="165" y2="85" stroke="#ddd" stroke-width="1"/>
+  <line x1="35" y1="130" x2="165" y2="130" stroke="#ddd" stroke-width="1"/>
+  
+  <!-- 外枠 -->
+  <rect x="30" y="30" width="140" height="140" fill="none" stroke="#667eea" stroke-width="2" rx="10"/>
+</svg>

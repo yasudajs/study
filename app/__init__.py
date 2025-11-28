@@ -1,0 +1,61 @@
+"""
+Flask アプリケーションファクトリー
+"""
+from flask import Flask
+from config import get_config
+from app.common.utils import init_logger
+from app.common.db import init_db
+
+def create_app(config_name='development'):
+    """
+    Flaskアプリケーションファクトリ
+    
+    Args:
+        config_name: 設定名 ('development', 'production', 'testing')
+    """
+    import os
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    app = Flask(__name__,
+                template_folder=os.path.join(base_dir, 'templates'),
+                static_folder=os.path.join(base_dir, 'static'))
+    
+    # 設定の読み込み
+    config = get_config(config_name)
+    app.config.from_object(config)
+    
+    # ロギング初期化
+    init_logger(app)
+    
+    # データベース初期化
+    with app.app_context():
+        init_db(app)
+    
+    # Blueprint登録
+    from app.portal import portal_bp
+    from app.kuku import kuku_bp
+    
+    # ポータル画面（ルート）
+    app.register_blueprint(portal_bp, url_prefix='/')
+    
+    # 各学習アプリ
+    app.register_blueprint(kuku_bp, url_prefix='/kuku')
+    
+    # グローバルエラーハンドラ
+    register_error_handlers(app)
+    
+    app.logger.info(f'Flask application created in {config_name} mode')
+    
+    return app
+
+def register_error_handlers(app):
+    """グローバルエラーハンドラの登録"""
+    from flask import jsonify
+    
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({'error': 'Not Found'}), 404
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        app.logger.error(f'Internal server error: {error}')
+        return jsonify({'error': 'Internal Server Error'}), 500

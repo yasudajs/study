@@ -1,0 +1,643 @@
+{% extends "base.html" %}
+
+{% block title %}九九練習 - 掛け算練習アプリ{% endblock %}
+
+{% block description %}小学生向け九九（掛け算）練習アプリ。1×1～9×9を楽しく練習できます。{% endblock %}
+
+{% block content %}
+<div class="kuku-app">
+    <header class="app-header">
+        <a href="/" class="back-button">← 戻る</a>
+        <h1>九九練習</h1>
+    </header>
+    
+    <main class="app-main">
+        <!-- 画面1: レベル選択 -->
+        <div id="screen-select-level" class="screen active">
+            <h2>掛ける数（段）を選択してください</h2>
+            <div class="level-buttons">
+                {% for level in range(1, 10) %}
+                <button class="level-btn" data-level="{{ level }}">
+                    {{ level }}段
+                </button>
+                {% endfor %}
+            </div>
+            <div class="button-group">
+                <button id="proceed-to-mode" class="btn btn-primary" disabled>進む</button>
+                <button id="clear-selection" class="btn btn-secondary">選択をリセット</button>
+            </div>
+        </div>
+        
+        <!-- 画面2: 出題方式選択 -->
+        <div id="screen-select-mode" class="screen">
+            <h2>出題方式を選択してください</h2>
+            <div class="mode-buttons">
+                <button class="mode-btn active" data-mode="sequential">
+                    順番（1×1, 1×2, ...）
+                </button>
+                <button class="mode-btn" data-mode="random">
+                    ランダム（順序ランダム）
+                </button>
+            </div>
+            <button id="start-quiz" class="btn btn-primary">スタート</button>
+            <button id="back-to-level" class="btn btn-secondary">戻る</button>
+        </div>
+        
+        <!-- 画面3: クイズ出題 -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-header">
+                <span class="quiz-count">問題 <span id="current-question">1</span> / <span id="total-questions">9</span></span>
+                <span class="quiz-progress">
+                    <progress id="progress-bar" value="1" max="9"></progress>
+                </span>
+            </div>
+            
+            <div class="quiz-content">
+                <div class="quiz-problem">
+                    <span id="quiz-number1">2</span>
+                    <span class="quiz-operator">×</span>
+                    <span id="quiz-number2">1</span>
+                    <span class="quiz-equal">=</span>
+                    <span id="quiz-answer" class="quiz-answer-input">?</span>
+                </div>
+                
+                <div class="quiz-input">
+                    <input 
+                        type="text" 
+                        id="answer-input" 
+                        placeholder="答えを入力" 
+                        inputmode="numeric"
+                        min="0"
+                        max="81"
+                        autocomplete="off"
+                        readonly
+                    >
+                </div>
+
+                <!-- 数値入力ボタン -->
+                <div class="number-pad">
+                    <div class="number-pad-row">
+                        <button class="number-btn" data-number="1">1</button>
+                        <button class="number-btn" data-number="2">2</button>
+                        <button class="number-btn" data-number="3">3</button>
+                    </div>
+                    <div class="number-pad-row">
+                        <button class="number-btn" data-number="4">4</button>
+                        <button class="number-btn" data-number="5">5</button>
+                        <button class="number-btn" data-number="6">6</button>
+                    </div>
+                    <div class="number-pad-row">
+                        <button class="number-btn" data-number="7">7</button>
+                        <button class="number-btn" data-number="8">8</button>
+                        <button class="number-btn" data-number="9">9</button>
+                    </div>
+                    <div class="number-pad-row">
+                        <button id="clear-input" class="number-btn number-btn-clear">削除</button>
+                        <button class="number-btn" data-number="0">0</button>
+                        <button id="submit-answer" class="number-btn number-btn-submit">答える</button>
+                    </div>
+                </div>
+                
+                <div id="feedback" class="feedback"></div>
+                
+                <!-- 正解不正解のモーダルオーバーレイ -->
+                <div id="result-modal" class="result-modal">
+                    <div class="result-modal-content">
+                        <div id="result-symbol" class="result-symbol"></div>
+                        <p id="result-text" class="result-text"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 画面4: 結果表示 -->
+        <div id="screen-result" class="screen">
+            <h2>完成！</h2>
+            <div class="result-score">
+                <div class="score-number" id="result-score">8/9</div>
+                <div class="score-rate" id="result-rate">88%</div>
+            </div>
+            
+            <div class="result-details">
+                <p>正解：<span id="result-correct-count">8</span>問</p>
+                <p>不正解：<span id="result-incorrect-count">1</span>問</p>
+            </div>
+            
+            <div class="result-actions">
+                <button id="retry-quiz" class="btn btn-primary">もう一度</button>
+                <button id="change-level" class="btn btn-secondary">別の段で練習</button>
+                <button id="back-to-portal" class="btn btn-secondary">アプリ一覧に戻る</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.kuku-app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: white;
+    max-width: 100%;
+}
+
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.back-button {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 12px;
+}
+
+.app-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.screen {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.screen.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+/* レベル選択画面 */
+.level-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.level-btn {
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    background: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.level-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.level-btn.selected {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* ボタングループ */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.button-group .btn {
+    width: 100%;
+}
+
+/* 出題方式選択画面 */
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.mode-btn {
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    border-color: #667eea;
+    background: #f5f5f5;
+}
+
+.mode-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* クイズ画面 */
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.quiz-count {
+    font-weight: bold;
+    color: #333;
+}
+
+.quiz-progress {
+    flex: 1;
+    margin-left: 20px;
+}
+
+progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    border: none;
+}
+
+.quiz-problem {
+    background: #f5f5f5;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.quiz-operator {
+    margin: 0 10px;
+    color: #667eea;
+}
+
+.quiz-equal {
+    margin: 0 10px;
+    color: #666;
+}
+
+.quiz-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#answer-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 18px;
+    text-align: center;
+}
+
+#answer-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* 数値入力パッド */
+.number-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+.number-pad-row {
+    display: contents;
+}
+
+.number-btn {
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.number-btn:hover {
+    border-color: #667eea;
+    background: #f0f5ff;
+    transform: scale(1.05);
+}
+
+.number-btn:active {
+    background: #667eea;
+    color: white;
+    transform: scale(0.95);
+}
+
+.number-btn-clear {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.number-btn-clear:hover {
+    background: #ffe69c;
+    border-color: #ffc107;
+}
+
+.number-btn-clear:active {
+    background: #ffc107;
+    color: white;
+}
+
+.number-btn-submit {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.number-btn-submit:hover {
+    background: #5568d3;
+    border-color: #5568d3;
+}
+
+.feedback {
+    text-align: center;
+    font-size: 16px;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.feedback.correct {
+    background: #d4edda;
+    color: #155724;
+}
+
+.feedback.incorrect {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* 正解不正解モーダル */
+.result-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.result-modal.active {
+    display: flex;
+}
+
+.result-modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.result-symbol {
+    font-size: 120px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    animation: pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.result-text {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 20px 0;
+    color: #333;
+}
+
+.result-modal.correct .result-symbol {
+    color: #4CAF50;
+}
+
+.result-modal.correct .result-text {
+    color: #4CAF50;
+}
+
+.result-modal.incorrect .result-symbol {
+    color: #f44336;
+}
+
+.result-modal.incorrect .result-text {
+    color: #f44336;
+}
+
+/* 結果画面 */
+.result-score {
+    text-align: center;
+    margin: 40px 0;
+}
+
+.score-number {
+    font-size: 64px;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 10px;
+}
+
+.score-rate {
+    font-size: 32px;
+    color: #666;
+}
+
+.result-details {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.result-details p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+/* ボタン */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.btn-secondary:hover {
+    background: #f5f5f5;
+}
+
+.result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.result-actions .btn {
+    margin-bottom: 0;
+}
+
+/* レスポンシブ */
+@media (max-width: 599px) {
+    .app-header {
+        padding: 15px;
+    }
+    
+    .app-header h1 {
+        font-size: 22px;
+    }
+    
+    .app-main {
+        padding: 15px;
+    }
+    
+    .level-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .quiz-problem {
+        font-size: 36px;
+        padding: 20px;
+    }
+    
+    .score-number {
+        font-size: 48px;
+    }
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+    .level-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 900px) {
+    .kuku-app {
+        max-width: 600px;
+        margin: 40px auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        height: auto;
+        min-height: 90vh;
+    }
+    
+    .app-main {
+        padding: 40px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/quizLogic.js"></script>
+<script src="/static/js/scorer.js"></script>
+<script src="/static/js/main.js"></script>
+{% endblock %}

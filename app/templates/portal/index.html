@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}学習アプリポータル{% endblock %}
+
+{% block description %}小学生向け学習アプリのポータル画面{% endblock %}
+
+{% block content %}
+<div class="portal-container">
+    <h1>学習アプリポータル</h1>
+    <p class="subtitle">学びたい学習アプリを選択してください</p>
+    
+    <div class="apps-grid">
+        {% for app in apps %}
+        <div class="app-card">
+            <a href="{{ app.url }}" class="app-link">
+                <img src="{{ app.icon }}" alt="{{ app.name }}" class="app-icon">
+                <h2 class="app-name">{{ app.name }}</h2>
+                <p class="app-description">{{ app.description }}</p>
+                <p class="app-level">対象：{{ app.level }}</p>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.portal-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 32px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+    font-size: 16px;
+}
+
+.apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.app-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.app-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.app-link {
+    display: block;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.app-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    background: #f0f0f0;
+}
+
+.app-name {
+    font-size: 20px;
+    color: #333;
+    margin: 10px 0;
+}
+
+.app-description {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.app-level {
+    color: #999;
+    font-size: 12px;
+    margin-top: 15px;
+}
+
+/* レスポンシブ */
+@media (max-width: 599px) {
+    .portal-container {
+        margin: 20px auto;
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    .apps-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
