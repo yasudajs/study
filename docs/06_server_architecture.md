@@ -112,7 +112,7 @@ Pillow 9.5.0
 │   ├── conftest.py
 │   └── fixtures/
 │
-├── wsgi.py                        # WSGI エントリーポイント
+├── wsgi_app.py                    # WSGI エントリーポイント（CGI互換）
 ├── requirements.txt               # Pythonパッケージ依存関係
 ├── .env.example                   # 環境変数テンプレート
 ├── .gitignore
@@ -228,9 +228,6 @@ def register_error_handlers(app):
 
 ```python
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Config:
     """共通設定"""
@@ -255,12 +252,21 @@ class ProductionConfig(Config):
     """本番環境設定"""
     DEBUG = False
 
-config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'testing': DevelopmentConfig,
-}
+def get_config(env=None):
+    """環境に応じた設定を取得"""
+    if env is None:
+        env = os.getenv('FLASK_ENV', 'development')
+    
+    config_map = {
+        'development': DevelopmentConfig,
+        'production': ProductionConfig,
+        'testing': DevelopmentConfig,
+    }
+    
+    return config_map.get(env, DevelopmentConfig)
 ```
+
+**補注**: 本番環境（Lolipop!）では `.env` ファイルを使用せず、`os.getenv()` のみで環境変数を読み取ります。
 
 ### 4.3 ポータル画面 Blueprint（portal/__init__.py）
 

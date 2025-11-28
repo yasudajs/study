@@ -42,7 +42,7 @@
 ### 技術・アーキテクチャ設計
 - [04_technical_design.md](04_technical_design.md) - フロントエンド技術設計（HTML/CSS/JavaScript + API連携）
 - [05_user_flow.md](05_user_flow.md) - ユースケース・画面遷移図
-- [06_server_architecture.md](06_server_architecture.md) - サーバーアーキテクチャ・バックエンド設計（Flask + MySQL）
+- [06_server_architecture.md](06_server_architecture.md) - サーバーアーキテクチャ・バックエンド設計（Flask + SQLite）
 
 ### デプロイ・運用
 - [07_deployment_guide.md](07_deployment_guide.md) - 構築・デプロイ手順書

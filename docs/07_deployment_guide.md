@@ -29,40 +29,12 @@ pip install --upgrade pip
 pip install Flask==2.2.5
 pip install Werkzeug==2.2.3
 pip install Jinja2==3.1.6
-pip install mysql-connector-python==8.0.33
 pip install requests==2.31.0
-pip install python-dotenv==0.21.0  # 環境変数管理（開発用）
 ```
 
-#### ステップ 4: 環境変数ファイルの作成
+#### ステップ 4: ローカル Flask アプリケーションの起動
 ```bash
-cp .env.example .env
-```
-
-`.env` ファイルを編集：
-```
-FLASK_ENV=development
-FLASK_APP=wsgi:app
-SECRET_KEY=dev-secret-key-change-for-production
-MYSQL_HOST=127.0.0.1
-MYSQL_USER=root
-MYSQL_PASSWORD=your-password
-MYSQL_DB=study
-MYSQL_PORT=3306
-LOG_LEVEL=DEBUG
-```
-
-#### ステップ 5: ローカル MySQL の準備（オプション）
-```bash
-# ローカルに MySQL がない場合はスキップ
-mysql -u root -p < database/init.sql
-```
-
-#### ステップ 6: Flask アプリケーションの起動
-```bash
-python wsgi.py
-# または
-flask run
+python wsgi_app.py
 ```
 
 アプリケーションは `http://localhost:5000/` でポータル画面を表示し、`http://localhost:5000/kuku/` で九九練習アプリをアクセス可能。
