@@ -20,6 +20,8 @@ class Scorer {
         
         this.answers.push({
             quiz_id: quiz.id,
+            multiplicand: quiz.multiplicand,
+            multiplier: quiz.multiplier,
             user_answer: userAnswer,
             correct_answer: quiz.correct_answer,
             is_correct: isCorrect

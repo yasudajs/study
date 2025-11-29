@@ -108,6 +108,12 @@
                 <p>正解：<span id="result-correct-count">8</span>問</p>
                 <p>不正解：<span id="result-incorrect-count">1</span>問</p>
             </div>
+
+            <!-- 回答履歴 -->
+            <div class="result-history">
+                <h3>回答履歴</h3>
+                <div id="answer-history" class="history-items"></div>
+            </div>
             
             <div class="result-actions">
                 <button id="retry-quiz" class="btn btn-primary">もう一度</button>
@@ -520,6 +526,79 @@ progress {
 .result-details p {
     margin: 10px 0;
     font-size: 16px;
+}
+
+/* 回答履歴 */
+.result-history {
+    margin-bottom: 30px;
+}
+
+.result-history h3 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #333;
+    text-align: center;
+}
+
+.history-items {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0;
+}
+
+.history-item {
+    display: grid;
+    grid-template-columns: 50px 1fr 80px 30px;
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-item.correct {
+    background: #f0f9ff;
+}
+
+.history-item.incorrect {
+    background: #ffebee;
+}
+
+.history-number {
+    font-weight: bold;
+    color: #666;
+    text-align: center;
+    font-size: 12px;
+}
+
+.history-problem {
+    font-weight: 500;
+    color: #333;
+}
+
+.history-answer {
+    font-size: 13px;
+    color: #666;
+}
+
+.history-status {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.history-item.correct .history-status {
+    color: #4CAF50;
+}
+
+.history-item.incorrect .history-status {
+    color: #f44336;
 }
 
 /* ボタン */

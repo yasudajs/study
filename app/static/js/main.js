@@ -400,6 +400,9 @@ class KukuApp {
         document.getElementById('result-incorrect-count').textContent = 
             summary.total_count - summary.correct_count;
 
+        // 回答履歴を表示
+        this.displayAnswerHistory();
+
         // 結果をサーバーに送信（1回のAPI呼び出しのみ）
         try {
             const response = await fetch('/kuku/api/result', {
@@ -424,11 +427,40 @@ class KukuApp {
 
         // 状態保存
         this.stateManager.updateState({
-            result: summary
+            result: summary,
+            answers: this.scorer.getAnswers()
         });
 
         // 結果画面表示
         this.showScreen('screen-result');
+    }
+
+    /**
+     * 回答履歴を表示
+     */
+    displayAnswerHistory() {
+        const historyContainer = document.getElementById('answer-history');
+        if (!historyContainer) return;
+
+        const answers = this.scorer.getAnswers();
+        let historyHTML = '<div class="history-items">';
+
+        answers.forEach((answer, index) => {
+            const statusClass = answer.is_correct ? 'correct' : 'incorrect';
+            const statusSymbol = answer.is_correct ? '○' : '×';
+            
+            historyHTML += `
+                <div class="history-item ${statusClass}">
+                    <span class="history-number">問${index + 1}</span>
+                    <span class="history-problem">${answer.multiplicand} × ${answer.multiplier} = ${answer.correct_answer}</span>
+                    <span class="history-answer">あなたの回答: ${answer.user_answer}</span>
+                    <span class="history-status">${statusSymbol}</span>
+                </div>
+            `;
+        });
+
+        historyHTML += '</div>';
+        historyContainer.innerHTML = historyHTML;
     }
 
     /**
