@@ -541,8 +541,6 @@ progress {
 }
 
 .history-items {
-    max-height: 300px;
-    overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 0;
@@ -550,12 +548,13 @@ progress {
 
 .history-item {
     display: grid;
-    grid-template-columns: 50px 1fr 80px 30px;
-    gap: 10px;
+    grid-template-columns: 45px auto 120px 30px;
+    gap: 12px;
     align-items: center;
     padding: 12px;
     border-bottom: 1px solid #eee;
-    font-size: 14px;
+    font-size: 15px;
+    min-width: 0;
 }
 
 .history-item:last-child {
@@ -580,11 +579,13 @@ progress {
 .history-problem {
     font-weight: 500;
     color: #333;
+    white-space: nowrap;
 }
 
 .history-answer {
-    font-size: 13px;
+    font-size: 14px;
     color: #666;
+    white-space: nowrap;
 }
 
 .history-status {
