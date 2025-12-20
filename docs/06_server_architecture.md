@@ -1,4 +1,4 @@
-# サーバー環境・デプロイ仕様書
+# サーバー環境・デプロイ仕様書（現行構成）
 
 ## 1. デプロイ環境仕様
 
@@ -51,6 +51,23 @@ Pillow 9.5.0
 - **Werkzeug**: WSGI アプリケーションツール
 - **Jinja2**: テンプレートエンジン
 - **sqlite3**: SQLite ドライバー（Python内蔵）
+
+### 2.3 現行ディレクトリ構成（簡易）
+```
+study/
+├── wsgi_app.py
+├── index.cgi
+├── config.py
+├── app/
+│   ├── portal/ {__init__.py, routes.py, logic.py}
+│   ├── kuku/   {__init__.py, routes.py, models.py}
+│   ├── shisoku/{__init__.py, routes.py}
+│   ├── common/ {__init__.py, db.py, utils.py}
+│   ├── static/ {css/, js/, images/, manifest.json, sw.js}
+│   └── templates/ {base.html, portal/index.html, kuku/index.html, shisoku/index.html}
+├── docs/ {00〜07, requirements_server.txt}
+└── data/ {study.db}
+```
 
 ---
 

@@ -1,4 +1,4 @@
-# 構築・デプロイ手順書
+# 構築・デプロイ手順書（現行構成）
 
 ## 1. 開発環境セットアップ
 
@@ -15,21 +15,30 @@ git clone <repository-url> ~/lolipop/study
 cd ~/lolipop/study
 ```
 
-#### ステップ 2: 仮想環境の構築
+#### ステップ 2: 仮想環境の構築（venv37）
+
+Windows（PowerShell）:
 ```bash
-python3.7 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# または
-venv\Scripts\activate     # Windows
+python -m venv venv37
+venv37\Scripts\Activate.ps1
 ```
 
-#### ステップ 3: 依存パッケージのインストール
+Windows（cmd.exe）:
+```bat
+python -m venv venv37
+venv37\Scripts\activate.bat
+```
+
+Linux/macOS（bash/zsh）:
+```bash
+python3 -m venv venv37
+source venv37/bin/activate
+```
+
+#### ステップ 3: 依存パッケージのインストール（サーバー互換）
 ```bash
 pip install --upgrade pip
-pip install Flask==2.2.5
-pip install Werkzeug==2.2.3
-pip install Jinja2==3.1.6
-pip install requests==2.31.0
+pip install Flask==2.2.5 Werkzeug==2.2.3 Jinja2==3.1.6 itsdangerous==2.1.2 click==8.1.8
 ```
 
 #### ステップ 4: ローカル Flask アプリケーションの起動
@@ -37,22 +46,18 @@ pip install requests==2.31.0
 python wsgi_app.py
 ```
 
-アプリケーションは `http://localhost:5000/` でポータル画面を表示し、`http://localhost:5000/kuku/` で九九練習アプリをアクセス可能。
+アプリケーションは `http://localhost:5000/` でポータル画面を表示し、`/kuku/`・`/shisoku/` へアクセス可能。
 
 ---
 
 ## 2. プロジェクト構造の初期化
 
-### 2.1 ディレクトリ構造の作成
-
-```bash
-mkdir -p portal/templates/portal
-mkdir -p kuku/templates/kuku
-mkdir -p kuku/static/{css,js/{screens,logic,utils}}
-mkdir -p common/{templates,static}
-mkdir -p tests
-mkdir -p logs
-mkdir -p database
+### 2.1 ディレクトリ構造（現行実装）
+```
+app/portal, app/kuku, app/shisoku, app/common
+app/static/{css,js,images,manifest.json,sw.js}
+app/templates/{base.html, portal/index.html, kuku/index.html, shisoku/index.html}
+wsgi_app.py, config.py, index.cgi, data/
 ```
 
 ### 2.2 必須ファイルの生成
@@ -77,52 +82,48 @@ def create_app(config_name='development'):
     return app
 ```
 
-#### `config.py`
+#### `config.py`（dotenv 不使用、os.getenv のみ）
 ```python
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Config:
-    """共通設定"""
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
     DEBUG = False
     TESTING = False
-    
-    # MySQL設定
-    MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
-    MYSQL_USER = os.getenv('MYSQL_USER', '')
-    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
-    MYSQL_DB = os.getenv('MYSQL_DB', 'study')
-    MYSQL_PORT = int(os.getenv('MYSQL_PORT', 3306))
+    DATABASE = os.getenv('DATABASE_PATH', 'data/study.db')
 
 class DevelopmentConfig(Config):
     DEBUG = True
-
+    
 class ProductionConfig(Config):
     DEBUG = False
 
-config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-}
+def get_config(name='development'):
+    return {'development': DevelopmentConfig,
+            'production': ProductionConfig}.get(name, DevelopmentConfig)
 ```
 
-#### `wsgi.py`
+#### `wsgi_app.py`（CGI互換のWSGIアプリ）
 ```python
+from flask import Flask
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+if 'SCRIPT_NAME' in os.environ:
+    os.environ['SCRIPT_NAME'] = ''
 
-from __init__ import create_app
+app = Flask(__name__,
+            template_folder=os.path.join(os.path.dirname(__file__), 'app', 'templates'),
+            static_folder=os.path.join(os.path.dirname(__file__), 'app', 'static'))
 
-config_name = os.getenv('FLASK_ENV', 'development')
-app = create_app(config_name)
+app.config['APPLICATION_ROOT'] = '/'
+app.secret_key = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
 
-if __name__ == '__main__':
-    app.run()
+from app.portal import portal_bp
+from app.kuku import kuku_bp
+from app.shisoku import shisoku_bp
+app.register_blueprint(portal_bp, url_prefix='/')
+app.register_blueprint(kuku_bp, url_prefix='/kuku')
+app.register_blueprint(shisoku_bp, url_prefix='/shisoku')
 ```
 
 ### 2.3 requirements.txt の作成
@@ -131,556 +132,154 @@ if __name__ == '__main__':
 pip freeze > requirements.txt
 ```
 
-あるいは手動で作成：
-```
-Flask==2.2.5
-Werkzeug==2.2.3
-Jinja2==3.1.6
-MarkupSafe==2.1.5
-itsdangerous==2.1.2
-click==8.1.8
-mysql-connector-python==8.0.33
-requests==2.31.0
-python-dotenv==0.21.0
-```
+あるいは `docs/requirements_server.txt` を参照（本番サーバーの互換モジュール一覧）
 
 ---
 
-## 3. フロントエンドの実装
+## 3. フロントエンドの実装（現行方針）
 
-### 3.1 基本的な HTML テンプレート
+クライアント側で「問題生成・採点・正答率計算」を完結させます。サーバー API はセッション作成と結果保存に限定します。
 
-`kuku/templates/kuku/index.html`:
-```html
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>九九練習アプリ</title>
-    <link rel="stylesheet" href="{{ url_for('kuku.static', filename='css/style.css') }}">
-</head>
-<body>
-    <div id="app"></div>
-    
-    <!-- スクリプト読み込み順序は重要 -->
-    <script src="{{ url_for('kuku.static', filename='js/utils/helpers.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/logic/stateManager.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/logic/quizLogic.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/screens/startScreen.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/screens/levelScreen.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/screens/modeScreen.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/screens/quizScreen.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/screens/resultScreen.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/app.js') }}"></script>
-    <script src="{{ url_for('kuku.static', filename='js/main.js') }}"></script>
-</body>
-</html>
-```
+### 3.1 テンプレート構成
+- ベース: [app/templates/base.html](app/templates/base.html)
+- 九九: [app/templates/kuku/index.html](app/templates/kuku/index.html)
+- 四則演算: [app/templates/shisoku/index.html](app/templates/shisoku/index.html)
+- ポータル: [app/templates/portal/index.html](app/templates/portal/index.html)
 
-### 3.2 基本的な CSS
+### 3.2 静的ファイル
+- スタイル: [app/static/css/style.css](app/static/css/style.css), [app/static/css/responsive.css](app/static/css/responsive.css)
+- 画像: [app/static/images/](app/static/images)
+- JavaScript: 
+  - 九九: [app/static/js/main.js](app/static/js/main.js), [app/static/js/quizLogic.js](app/static/js/quizLogic.js), [app/static/js/scorer.js](app/static/js/scorer.js)
+  - 四則演算: [app/static/js/shisokuLogic.js](app/static/js/shisokuLogic.js)
+  - PWA: [app/static/js/pwa.js](app/static/js/pwa.js), [app/static/manifest.json](app/static/manifest.json), [app/static/sw.js](app/static/sw.js)
 
-`kuku/static/css/style.css`:
-```css
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+### 3.3 入力方式（テンキー）
+- 入力フィールドは DOM に持たず、内部状態 `currentAnswer` で管理します。
+- 数字ボタンで `addNumberToInput(number)`、削除で `clearNumberInput()`、採点は `submitAnswer()` で実施。
+- 入力値はテンプレート内の「a × b = ?」などの `?` 表示へリアルタイム反映。
 
-body {
-    font-family: 'Arial', 'Hiragino Sans', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#app {
-    width: 100%;
-    max-width: 600px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    padding: 40px;
-    min-height: 400px;
-}
-
-h1, h2 {
-    color: #333;
-    margin-bottom: 30px;
-    text-align: center;
-    font-size: 32px;
-}
-
-h2 {
-    font-size: 24px;
-}
-
-.button-container {
-    display: flex;
-    gap: 20px;
-    margin-top: 30px;
-    justify-content: center;
-}
-
-button {
-    padding: 15px 30px;
-    font-size: 18px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background: #667eea;
-    color: white;
-    transition: all 0.3s ease;
-    flex: 1;
-    max-width: 200px;
-}
-
-button:hover:not(:disabled) {
-    background: #5568d3;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-input[type="text"],
-input[type="number"] {
-    width: 100%;
-    padding: 12px;
-    margin: 15px 0;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    transition: border-color 0.3s ease;
-}
-
-input[type="text"]:focus,
-input[type="number"]:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.quiz-container {
-    text-align: center;
-}
-
-.quiz-problem {
-    font-size: 48px;
-    margin: 30px 0;
-    color: #333;
-}
-
-.progress {
-    text-align: center;
-    margin: 20px 0;
-    color: #666;
-    font-size: 14px;
-}
-
-.result-display {
-    text-align: center;
-    margin: 40px 0;
-}
-
-.correct-rate {
-    font-size: 64px;
-    font-weight: bold;
-    color: #667eea;
-    margin: 20px 0;
-}
-
-.result-detail {
-    font-size: 18px;
-    color: #666;
-    margin: 20px 0;
-}
-
-/* レスポンシブ */
-@media (max-width: 600px) {
-    #app {
-        padding: 20px;
-        border-radius: 0;
-    }
-    
-    h1 {
-        font-size: 24px;
-    }
-    
-    .quiz-problem {
-        font-size: 36px;
-    }
-    
-    .button-container {
-        flex-direction: column;
-    }
-    
-    button {
-        max-width: 100%;
-    }
-}
-```
-
-### 3.3 メインアプリケーションロジック
-
-`kuku/static/js/main.js`:
-```javascript
-// アプリケーション初期化
-document.addEventListener('DOMContentLoaded', function() {
-    const app = new KukuApp();
-    app.init();
-});
-
-class KukuApp {
-    constructor() {
-        this.appContainer = document.getElementById('app');
-        this.stateManager = new StateManager();
-    }
-    
-    init() {
-        this.renderStartScreen();
-    }
-    
-    renderStartScreen() {
-        const screen = new StartScreen(this.stateManager, this);
-        screen.render(this.appContainer);
-    }
-    
-    renderLevelScreen() {
-        const screen = new LevelScreen(this.stateManager, this);
-        screen.render(this.appContainer);
-    }
-    
-    renderModeScreen() {
-        const screen = new ModeScreen(this.stateManager, this);
-        screen.render(this.appContainer);
-    }
-    
-    renderQuizScreen() {
-        const screen = new QuizScreen(this.stateManager, this);
-        screen.render(this.appContainer);
-    }
-    
-    renderResultScreen() {
-        const screen = new ResultScreen(this.stateManager, this);
-        screen.render(this.appContainer);
-    }
-    
-    changeScreen(screenName) {
-        if (screenName === 'level') this.renderLevelScreen();
-        else if (screenName === 'mode') this.renderModeScreen();
-        else if (screenName === 'quiz') this.renderQuizScreen();
-        else if (screenName === 'result') this.renderResultScreen();
-        else if (screenName === 'start') this.renderStartScreen();
-    }
-}
-```
+### 3.4 PWA
+- Service Worker と Manifest を有効化。オフライン時も基本画面を配信。
+- ルートに対するキャッシュ戦略は [app/static/sw.js](app/static/sw.js) を参照。
 
 ---
 
-## 4. バックエンド API の実装
+## 4. バックエンド構成（CGI/WSGI）
 
-### 4.1 Flask ルート定義
+本プロジェクトは Lolipop! の CGI 環境で動作します。WSGI アプリは [index.cgi](index.cgi) から [wsgi_app.py](wsgi_app.py) を介して起動されます。
 
-`kuku/routes.py`:
-```python
-from flask import request, jsonify, render_template
-from kuku import kuku_bp
-from kuku.logic import QuizLogic
-import uuid
-import json
+### 4.1 エントリーポイント
+- CGI: [index.cgi](index.cgi)（Shebang: `/usr/local/bin/python3.7`、`CGIHandler().run(app)`）
+- WSGI: [wsgi_app.py](wsgi_app.py)
+  - `SCRIPT_NAME` リセット、`APPLICATION_ROOT` を `/` に設定
+  - Blueprint を登録（`/`、`/kuku`、`/shisoku`）
 
-# セッション管理用（簡易版）
-sessions = {}
+### 4.2 ルート定義（最小）
+- ポータル: [app/portal/routes.py](app/portal/routes.py) — `index()` でテンプレート配信
+- 九九: [app/kuku/routes.py](app/kuku/routes.py) — `index()`（テンプレート配信）、`/api/session`・`/api/result`（任意・最小）
+- 四則演算: [app/shisoku/routes.py](app/shisoku/routes.py) — `index()` でテンプレート配信
 
-@kuku_bp.route('/', methods=['GET'])
-def index():
-    """フロントエンド HTML を返す"""
-    return render_template('kuku/index.html')
-
-@kuku_bp.route('/start', methods=['GET'])
-def start():
-    """アプリ開始"""
-    return jsonify({'status': 'ready'}), 200
-
-@kuku_bp.route('/quiz', methods=['POST'])
-def get_quiz():
-    """出題リスト取得"""
-    data = request.get_json()
-    levels = data.get('levels', [])
-    mode = data.get('mode', 'sequential')
-    
-    # バリデーション
-    if not levels or not all(1 <= l <= 9 for l in levels):
-        return jsonify({'error': 'Invalid levels'}), 400
-    
-    if mode not in ['sequential', 'random']:
-        return jsonify({'error': 'Invalid mode'}), 400
-    
-    # 問題リスト生成
-    logic = QuizLogic(levels, mode)
-    quiz_list = logic.generate_quizzes()
-    
-    # セッション作成
-    session_id = str(uuid.uuid4())
-    sessions[session_id] = {
-        'levels': levels,
-        'mode': mode,
-        'quizzes': quiz_list,
-        'answers': []
-    }
-    
-    return jsonify({
-        'quiz_list': quiz_list,
-        'session_id': session_id,
-        'total_count': len(quiz_list)
-    }), 200
-
-@kuku_bp.route('/submit', methods=['POST'])
-def submit_answer():
-    """回答送信"""
-    data = request.get_json()
-    session_id = data.get('session_id')
-    quiz_id = data.get('quiz_id')
-    user_answer = data.get('user_answer')
-    
-    if session_id not in sessions:
-        return jsonify({'error': 'Session not found'}), 404
-    
-    session = sessions[session_id]
-    
-    # 問題を検索
-    quiz = next((q for q in session['quizzes'] if q['id'] == quiz_id), None)
-    if not quiz:
-        return jsonify({'error': 'Quiz not found'}), 404
-    
-    # 採点
-    is_correct = (user_answer == quiz['correct_answer'])
-    
-    # 回答を記録
-    session['answers'].append({
-        'quiz_id': quiz_id,
-        'user_answer': user_answer,
-        'is_correct': is_correct
-    })
-    
-    return jsonify({
-        'quiz_id': quiz_id,
-        'is_correct': is_correct,
-        'correct_answer': quiz['correct_answer']
-    }), 200
-
-@kuku_bp.route('/result/<session_id>', methods=['GET'])
-def get_result(session_id):
-    """結果表示"""
-    if session_id not in sessions:
-        return jsonify({'error': 'Session not found'}), 404
-    
-    session = sessions[session_id]
-    answers = session['answers']
-    
-    correct_count = sum(1 for a in answers if a['is_correct'])
-    total_count = len(answers)
-    correct_rate = round((correct_count / total_count * 100) if total_count > 0 else 0)
-    
-    return jsonify({
-        'correct_count': correct_count,
-        'total_count': total_count,
-        'correct_rate': correct_rate,
-        'levels': session['levels'],
-        'mode': session['mode']
-    }), 200
-```
-
-### 4.2 ビジネスロジック
-
-`kuku/logic.py`:
-```python
-import random
-
-class QuizLogic:
-    """九九クイズロジック"""
-    
-    def __init__(self, levels, mode):
-        self.levels = sorted(levels)
-        self.mode = mode
-    
-    def generate_quizzes(self):
-        """問題リスト生成"""
-        quizzes = []
-        quiz_id = 1
-        
-        for level in self.levels:
-            for multiplier in range(1, 10):
-                quiz = {
-                    'id': quiz_id,
-                    'multiplicand': level,
-                    'multiplier': multiplier,
-                    'correct_answer': level * multiplier
-                }
-                quizzes.append(quiz)
-                quiz_id += 1
-        
-        # ランダムモードの場合
-        if self.mode == 'random':
-            random.shuffle(quizzes)
-        
-        return quizzes
-```
+出題・採点はクライアント側で行うため、サーバーの API はセッション作成と結果保存のみ（必要時）。
 
 ---
 
-## 5. 本番環境へのデプロイ（Lolipop!）
+## 5. 本番環境へのデプロイ（Lolipop!／CGI）
 
-### 5.1 Lolipop! での初期設定
+### 5.1 前提条件（サーバー側）
+- Python 3.7 実行環境（`/usr/local/bin/python3.7`）
+- CGI 実行が有効
+- サーバー側の Python モジュールはバージョン固定（`docs/requirements_server.txt` を参照）
 
-1. **Lolipop! コントロールパネルで Python 3.7 を有効化**
-2. **SSH アクセスを有効化**
-3. **ドメイン設定を完了**
+### 5.2 配置手順（SFTP/SSH）
+1. サーバーへ接続（SSH または SFTP）
+2. CGI 実行ディレクトリへアップロード
+    - 必須: [index.cgi](index.cgi), [wsgi_app.py](wsgi_app.py), [config.py](config.py)
+    - ディレクトリ: [app/](app), [data/](data)
+3. 実行権限の付与（Lolipop 推奨パーミッション）
+    - CGI 実行ファイル: `index.cgi` → `700`
+    - ディレクトリ: `public_html/` や `study/` など → `705`
+    - Python スクリプト（例: [wsgi_app.py](wsgi_app.py), [config.py](config.py)）→ `604`
+    - HTML/CSS/JS/画像ファイル → `604`
+    - CGI のデータファイル（書込み含む）→ `600`
+    - `.htaccess` → `604`
+4. 環境変数の設定（コントロールパネル等）
+    - `SECRET_KEY`、必要なら `LOG_LEVEL`、`DATABASE_PATH` 等
+5. データベース（SQLite）
+    - [data/](data) 配下に DB ファイルを配置／初期化（書込み権限に注意）
 
-### 5.2 本番環境へのデプロイ手順
+#### 5.2.1 サーバーの配置構成（例）
+以下は `public_html/study/` に設置する例です。ルート直下に `index.cgi` と `wsgi_app.py` を置き、テンプレート／静的ファイルは `app/` 配下にまとめます。
 
-#### ステップ 1: Lolipop! サーバーへの接続
-```bash
-ssh your-account@lolipop.jp
+```
+public_html/
+└─ study/
+    ├─ index.cgi                # CGI エントリ（700）
+    ├─ wsgi_app.py              # WSGI アプリ
+    ├─ config.py                # 設定（os.getenv のみ）
+    ├─ app/
+    │  ├─ __init__.py
+    │  ├─ portal/
+    │  │  ├─ __init__.py
+    │  │  ├─ routes.py
+    │  │  └─ logic.py
+    │  ├─ kuku/
+    │  │  ├─ __init__.py
+    │  │  ├─ routes.py
+    │  │  └─ models.py
+    │  ├─ shisoku/
+    │  │  ├─ __init__.py
+    │  │  └─ routes.py
+    │  ├─ common/
+    │  │  ├─ __init__.py
+    │  │  ├─ db.py
+    │  │  └─ utils.py
+    │  ├─ static/
+    │  │  ├─ css/
+    │  │  ├─ js/
+    │  │  ├─ images/
+    │  │  ├─ manifest.json
+    │  │  └─ sw.js
+    │  └─ templates/
+    │     ├─ base.html
+    │     ├─ portal/index.html
+    │     ├─ kuku/index.html
+    │     └─ shisoku/index.html
+    ├─ data/                    # SQLite DB／初期化用
+    └─ docs/                    # ドキュメント（不要なら除外可）
 ```
 
-#### ステップ 2: ディレクトリ移動
-```bash
-cd ~/www/lolipop/study
-```
+注: 実際の Lolipop! の公開ディレクトリ名はプランや設定により異なる場合があります（例: `web/`, `public_html/`）。ご利用環境のドキュメントルートを確認して適宜読み替えてください。
 
-#### ステップ 3: ソースコードの配置
-```bash
-git clone <repository-url> .
-# または既存リポジトリの場合
-git pull origin main
-```
+#### 5.2.2 パーミッションと改行コードの注意
+- CGI 実行ファイル（`.cgi`）は `700` に設定してください。
+- ディレクトリは `705`、その他のテキストファイル（`.py`, `.html`, `.css`, `.js`）は通常 `604` を推奨します。
+- CGI のデータファイルは `600` を推奨します。
+- `.htaccess` は `604` を推奨します。
+- Windows からアップロードする場合、改行コードは LF（Unix）を推奨します（サーバー側でのスクリプト解釈の互換性のため）。
 
-#### ステップ 4: 仮想環境の構築
-```bash
-python3.7 -m venv venv
-source venv/bin/activate
-```
+### 5.3 動作確認（CGI）
+- ブラウザでサイトルートにアクセス（ポータル画面）
+- 九九: `/kuku/`、四則演算: `/shisoku/` が表示されること
 
-#### ステップ 5: 依存パッケージのインストール
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-#### ステップ 6: 環境変数の設定
-```bash
-cp .env.example .env
-# .env を編集（Lolipop! の MySQL 情報を入力）
-```
-
-環境変数例（Lolipop!）:
-```
-FLASK_ENV=production
-FLASK_APP=wsgi:app
-SECRET_KEY=your-secret-key-here
-MYSQL_HOST=localhost
-MYSQL_USER=lolipop_user
-MYSQL_PASSWORD=lolipop_password
-MYSQL_DB=study_db
-MYSQL_PORT=3306
-```
-
-#### ステップ 7: データベーステーブルの作成
-```bash
-python3.7 << 'EOF'
-import mysql.connector
-from app.config import config
-
-cfg = config['production']
-conn = mysql.connector.connect(
-    host=cfg.MYSQL_HOST,
-    user=cfg.MYSQL_USER,
-    password=cfg.MYSQL_PASSWORD,
-    port=cfg.MYSQL_PORT
-)
-cursor = conn.cursor()
-
-# データベース作成
-cursor.execute(f"CREATE DATABASE IF NOT EXISTS {cfg.MYSQL_DB}")
-
-# テーブル作成
-cursor.execute(f"USE {cfg.MYSQL_DB}")
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS quiz_sessions (
-        id VARCHAR(36) PRIMARY KEY,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        app_type VARCHAR(50) NOT NULL,
-        levels JSON NOT NULL,
-        mode VARCHAR(20) NOT NULL,
-        correct_count INT DEFAULT 0,
-        total_count INT DEFAULT 0,
-        status VARCHAR(20) DEFAULT 'active'
-    )
-""")
-
-conn.commit()
-cursor.close()
-conn.close()
-print("Database and tables created successfully")
-EOF
-```
-
-#### ステップ 8: Lolipop! での WSGI 設定
-
-Lolipop! のコントロールパネルで、`wsgi.py` を WSGI アプリケーション のエントリーポイントとして設定。
-
-#### ステップ 9: アプリケーションの起動
-
-```bash
-# 本番環境での起動（gunicorn推奨）
-pip install gunicorn
-gunicorn -w 4 -b 127.0.0.1:8000 wsgi:app &
-```
-
-あるいは、Lolipop! コントロールパネルから自動起動設定。
-
-### 5.3 HTTPS設定
-
-Lolipop! の SSL 証明書設定を有効化。
-
-### 5.4 ドメイン設定
-
-ドメインのDNS設定を Lolipop! ネームサーバーに指定。
+### 5.4 セキュリティ／ドメイン
+- SSL（HTTPS）を有効化
+- ドメイン設定を完了（DNS／ネームサーバー）
 
 ---
 
 ## 6. デプロイ後の確認
 
-### 6.1 アプリケーションのテスト
+### 6.1 アプリ表示確認
+- ポータル: `https://your-domain.jp/` が表示される
+- 九九: `https://your-domain.jp/kuku/`、四則演算: `https://your-domain.jp/shisoku/`
 
-```bash
-# ヘルスチェック
-curl https://your-domain.jp/kuku/api/quiz
+### 6.2 静的ファイル／PWA
+- 画像・CSS・JS の読み込みエラーがないこと
+- Manifest・Service Worker が登録されること
 
-# 期待される応答
-# {"status": "ready"}
-```
-
-### 6.2 ログの確認
-
-```bash
-tail -f ~/www/lolipop/study/logs/app.log
-```
-
-### 6.3 エラーの確認
-
-```bash
-# MySQL 接続確認
-python3.7 -c "from app import create_app; app = create_app('production'); print('OK')"
-```
+### 6.3 ログ／エラー
+- [wsgi_app.py](wsgi_app.py) により、致命的エラーは `error.log` に追記されます（設置ディレクトリ直下）。
 
 ---
 
@@ -697,16 +296,15 @@ python3.7 -c "from app import create_app; app = create_app('production'); print(
 
 ## 8. 本番環境チェックリスト
 
-デプロイ前に確認：
+デプロイ前後の確認：
 
-- [ ] Python 3.7 が Lolipop! に正しくインストールされている
-- [ ] すべての必須 Python モジュールがインストールされている
-- [ ] MySQL データベースが作成され、接続できる
-- [ ] .env ファイルで本番用の設定が入力されている
-- [ ] HTTPS (SSL) が有効になっている
-- [ ] ドメインが正しく設定されている
-- [ ] API エンドポイントが動作している
-- [ ] フロントエンド HTML が正しく配信されている
-- [ ] ログファイルの出力パスが正しい
-- [ ] バックアップ戦略が策定されている
-- [ ] パフォーマンス測定（負荷試験）を実施
+- [ ] Python 3.7（`/usr/local/bin/python3.7`）が利用可能
+- [ ] `index.cgi` の実行権限が `700`
+- [ ] ディレクトリ権限が `705`
+- [ ] 必須ファイルの配置（[index.cgi](index.cgi), [wsgi_app.py](wsgi_app.py), [config.py](config.py), [app/](app), [data/](data)）
+- [ ] サーバー側モジュールの互換性（[docs/requirements_server.txt](docs/requirements_server.txt)）
+- [ ] 環境変数（`SECRET_KEY` など）が設定済み
+- [ ] SQLite の書込み権限（[data/](data)）
+- [ ] ポータル／各アプリの表示確認（`/`, `/kuku`, `/shisoku`）
+- [ ] 静的ファイル・PWA（Manifest／Service Worker）が正常
+- [ ] 重大エラー時の `error.log` 出力確認

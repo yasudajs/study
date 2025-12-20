@@ -1,4 +1,65 @@
-# フロントエンド技術設計書
+# 技術設計書（フロントエンド／バックエンド統合）
+
+## 1. 技術スタックと方針
+- フロントエンド: HTML5 / CSS3 / JavaScript（Vanilla）
+- PWA: Service Worker + Web App Manifest
+- バックエンド: Flask 2.2.5（Python 3.7）、Blueprint構成、SQLite 3
+- CGI/WSGI: Lolipop! 環境で `index.cgi` → `wsgi_app.py`
+- 環境変数: `.env` を使わず `os.getenv()` のみ
+
+## 2. リポジトリ構成（抜粋）
+```
+app/
+  portal/      # アプリ一覧
+  kuku/        # 九九練習
+  shisoku/     # 四則演算練習
+  common/      # 共通モジュール
+  static/      # 共有静的ファイル（css/js/images/manifest/sw）
+  templates/   # 共有テンプレート（base、各app配下）
+wsgi_app.py    # WSGIエントリ（CGI互換設定）
+config.py      # 設定（os.getenv）
+index.cgi      # CGIハンドラ
+```
+
+## 3. フロントエンド構成
+- テンプレート: Jinja2 + HTML5（`app/templates/...`）
+- スタイル: `app/static/css/style.css`, `responsive.css`
+- JavaScript:
+  - 九九: `app/static/js/main.js`, `quizLogic.js`, `scorer.js`
+  - 四則演算: `app/static/js/shisokuLogic.js`
+  - PWA: `app/static/js/pwa.js`
+- PWA: `app/static/manifest.json`, `app/static/sw.js`
+
+## 4. クライアント中心設計（重要）
+- 問題生成／採点／正答率計算: クライアント側で実施
+- 画面遷移: クライアント側で制御
+- サーバー呼び出し: セッション作成／結果保存のみ（将来）
+
+## 5. バックエンド構成
+- Blueprint登録（`wsgi_app.py`）
+  - `portal_bp` → `/`
+  - `kuku_bp` → `/kuku`
+  - `shisoku_bp` → `/shisoku`
+- CGI/WSGI設定
+  - `SCRIPT_NAME` をリセット、`APPLICATION_ROOT = '/'`
+- 秘密鍵: `os.getenv('SECRET_KEY', 'dev-key-change-in-production')`
+- 画像配信: `/favicon.ico` を静的パスへ割当
+
+## 6. データベース
+- SQLite 3、`data/study.db`
+- 初期化: `app/common/db.py` の `init_db(app)`（必要時）
+
+## 7. セキュリティ・アクセシビリティ
+- セッションCookie: `Secure/HttpOnly/SameSite=Lax`
+- UI: 高コントラスト、十分なタップ領域（>=44px）
+
+## 8. パフォーマンス
+- DOM操作の最小化、バッチ更新、軽量JS
+- オフラインキャッシュ（静的ファイル）
+
+## 9. 拡張方針
+- 新規アプリは `app/<new_app>/` を追加し Blueprint登録
+- 共通モジュール活用（DB、ユーティリティ、エラーハンドラ）# フロントエンド技術設計書
 
 ## 1. 技術スタック
 
