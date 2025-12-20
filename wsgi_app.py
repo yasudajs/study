@@ -25,12 +25,22 @@ app.secret_key = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
 try:
     from app.portal import portal_bp
     from app.kuku import kuku_bp
+    from app.shisoku import shisoku_bp
     
     # ポータル画面（ルート）
     app.register_blueprint(portal_bp, url_prefix='/')
     
     # 各学習アプリ
     app.register_blueprint(kuku_bp, url_prefix='/kuku')
+    app.register_blueprint(shisoku_bp, url_prefix='/shisoku')
+
+    # favicon 配信
+    from flask import send_from_directory
+    app.add_url_rule('/favicon.ico', 'favicon', lambda: send_from_directory(
+        os.path.join(os.path.dirname(__file__), 'app', 'static', 'images', 'app_icons'),
+        'shisoku.svg',
+        mimetype='image/svg+xml'
+    ))
     
     # グローバルエラーハンドラ
     from flask import jsonify

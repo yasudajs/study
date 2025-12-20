@@ -5,6 +5,7 @@ from flask import Flask
 from config import get_config
 from app.common.utils import init_logger
 from app.common.db import init_db
+from flask import send_from_directory
 
 def create_app(config_name='development'):
     """
@@ -33,16 +34,25 @@ def create_app(config_name='development'):
     # Blueprint登録
     from app.portal import portal_bp
     from app.kuku import kuku_bp
+    from app.shisoku import shisoku_bp
     
     # ポータル画面（ルート）
     app.register_blueprint(portal_bp, url_prefix='/')
     
     # 各学習アプリ
     app.register_blueprint(kuku_bp, url_prefix='/kuku')
+    app.register_blueprint(shisoku_bp, url_prefix='/shisoku')
     
     # グローバルエラーハンドラ
     register_error_handlers(app)
     
+    # favicon 配信（ブラウザの自動リクエスト対応）
+    app.add_url_rule('/favicon.ico', 'favicon', lambda: send_from_directory(
+        os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'images', 'app_icons'),
+        'shisoku.svg',
+        mimetype='image/svg+xml'
+    ))
+
     app.logger.info(f'Flask application created in {config_name} mode')
     
     return app
