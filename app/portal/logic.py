@@ -15,14 +15,13 @@ def get_available_apps():
             'url': '/kuku/',
             'level': '小学1～3年生'
         },
-        # 将来：わり算、たし算、ひき算アプリなど
-        # {
-        #     'id': 'warizan',
-        #     'name': '割り算練習',
-        #     'description': '割り算の計算を練習します',
-        #     'icon': '/static/images/app_icons/warizan.svg',
-        #     'url': '/warizan/',
-        #     'level': '小学3～4年生'
-        # },
+        {
+            'id': 'calc',
+            'name': '四則演算練習',
+            'description': '足し算、引き算、掛け算、割り算を練習します',
+            'icon': '/static/images/app_icons/calc.svg',
+            'url': '/calc/',
+            'level': '小学生低学年～'
+        },
     ]
     return apps

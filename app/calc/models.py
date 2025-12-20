@@ -1,0 +1,122 @@
+"""
+四則演算練習アプリケーション - データモデル
+"""
+import sqlite3
+from datetime import datetime
+import uuid
+import json
+from flask import current_app
+import os
+
+class QuizSession:
+    """
+    クイズセッションモデル (Calc用)
+    """
+
+    def __init__(self, settings, mode='calc', app_type='calc'):
+        self.id = str(uuid.uuid4())
+        self.app_type = app_type
+        # settings: { 'operator': 'add', 'digits': '1', 'custom': { 'min': 1, 'max': 10 } }
+        self.settings = settings
+        self.mode = mode
+        self.correct_count = 0
+        self.total_count = 0
+        self.correct_rate = 0
+        self.status = 'active'
+        self.created_at = datetime.now()
+
+    def save(self):
+        """セッション作成"""
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            # levels カラムに settings をJSONとして保存
+            cursor.execute(
+                """
+                INSERT INTO quiz_sessions
+                (id, app_type, levels, mode, status)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (self.id, self.app_type, json.dumps(self.settings),
+                 self.mode, self.status)
+            )
+
+            conn.commit()
+            current_app.logger.info(f'Calc Session created: {self.id}')
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    def update_result(self, correct_count, total_count, correct_rate):
+        """結果更新"""
+        self.correct_count = correct_count
+        self.total_count = total_count
+        self.correct_rate = correct_rate
+
+    def mark_completed(self):
+        """完了状態へ"""
+        self.status = 'completed'
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                """
+                UPDATE quiz_sessions
+                SET status = ?, correct_count = ?, total_count = ?
+                WHERE id = ?
+                """,
+                (self.status, self.correct_count, self.total_count, self.id)
+            )
+
+            conn.commit()
+            current_app.logger.info(f'Calc Session completed: {self.id}')
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    @staticmethod
+    def get_by_id(session_id):
+        """IDから取得"""
+        conn = QuizSession.get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                "SELECT * FROM quiz_sessions WHERE id = ?",
+                (session_id,)
+            )
+
+            row = cursor.fetchone()
+
+            if not row:
+                return None
+
+            # levels カラムから settings を復元
+            session = QuizSession(
+                settings=json.loads(row['levels']),
+                mode=row['mode'],
+                app_type=row['app_type']
+            )
+            session.id = row['id']
+            session.correct_count = row['correct_count']
+            session.total_count = row['total_count']
+            session.status = row['status']
+
+            return session
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    @staticmethod
+    def get_db_connection():
+        """SQLite接続"""
+        db_path = current_app.config.get('DATABASE', 'data/study.db')
+        os.makedirs(os.path.dirname(db_path) or '.', exist_ok=True)
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        return conn

@@ -3,7 +3,7 @@
  * キャッシング戦略とオフライン対応
  */
 
-const CACHE_NAME = 'kuku-app-v2';
+const CACHE_NAME = 'kuku-app-v3';
 const ASSETS_TO_CACHE = [
     '/',
     '/static/css/style.css',
@@ -12,9 +12,14 @@ const ASSETS_TO_CACHE = [
     '/static/js/quizLogic.js',
     '/static/js/scorer.js',
     '/static/js/main.js',
+    '/static/js/calcLogic.js',
+    '/static/js/calcMain.js',
     '/kuku/',
     '/kuku/api/session',
-    '/kuku/api/result'
+    '/kuku/api/result',
+    '/calc/',
+    '/calc/api/session',
+    '/calc/api/result'
 ];
 
 // インストール時

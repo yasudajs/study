@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}四則演算練習 - 計算練習アプリ{% endblock %}
+
+{% block description %}小学生向け四則演算（足し算、引き算、掛け算、割り算）練習アプリ。桁数や範囲を自由に設定できます。{% endblock %}
+
+{% block content %}
+<div class="calc-app">
+    <header class="app-header">
+        <a href="/" class="back-button">← 戻る</a>
+        <h1>四則演算練習</h1>
+    </header>
+
+    <main class="app-main">
+        <!-- 画面1: 設定選択 -->
+        <div id="screen-settings" class="screen active">
+            <h2>練習の設定</h2>
+
+            <!-- 演算選択 -->
+            <div class="settings-section">
+                <h3>1. 計算の種類</h3>
+                <div class="operator-buttons">
+                    <button class="operator-btn active" data-operator="add">足し算 (+)</button>
+                    <button class="operator-btn" data-operator="sub">引き算 (-)</button>
+                    <button class="operator-btn" data-operator="mul">掛け算 (×)</button>
+                    <button class="operator-btn" data-operator="div">割り算 (÷)</button>
+                </div>
+            </div>
+
+            <!-- 桁数選択 -->
+            <div class="settings-section">
+                <h3>2. 桁数・難易度</h3>
+                <div class="digits-buttons">
+                    <button class="digits-btn active" data-digits="1">1桁</button>
+                    <button class="digits-btn" data-digits="2">2桁</button>
+                    <button class="digits-btn" data-digits="3">3桁</button>
+                    <button class="digits-btn" data-digits="4">4桁</button>
+                    <button class="digits-btn" data-digits="custom">自由設定</button>
+                </div>
+
+                <!-- 自由設定フォーム -->
+                <div id="custom-settings" class="custom-settings" style="display: none;">
+                    <div class="input-group">
+                        <label>最小値:</label>
+                        <input type="number" id="custom-min" value="1">
+                    </div>
+                    <div class="input-group">
+                        <label>最大値:</label>
+                        <input type="number" id="custom-max" value="100">
+                    </div>
+                    <p class="hint">※負の数を練習したい場合は最小値をマイナスに設定してください</p>
+                </div>
+            </div>
+
+            <button id="start-quiz" class="btn btn-primary">スタート</button>
+        </div>
+
+        <!-- 画面2: クイズ出題 -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-header">
+                <span class="quiz-count">問題 <span id="current-question">1</span> / <span id="total-questions">10</span></span>
+                <span class="quiz-progress">
+                    <progress id="progress-bar" value="1" max="10"></progress>
+                </span>
+            </div>
+
+            <div class="quiz-content">
+                <div class="quiz-problem">
+                    <span id="quiz-number1"></span>
+                    <span id="quiz-operator" class="quiz-operator"></span>
+                    <span id="quiz-number2"></span>
+                    <span class="quiz-equal">=</span>
+                    <span id="quiz-answer" class="quiz-answer-input">?</span>
+                </div>
+
+                <!-- 数値入力ボタン -->
+                <div class="number-pad">
+                    <div class="number-pad-row">
+                        <button class="number-btn" data-number="1">1</button>
+                        <button class="number-btn" data-number="2">2</button>
+                        <button class="number-btn" data-number="3">3</button>
+                    </div>
+                    <div class="number-pad-row">
+                        <button class="number-btn" data-number="4">4</button>
+                        <button class="number-btn" data-number="5">5</button>
+                        <button class="number-btn" data-number="6">6</button>
+                    </div>
+                    <div class="number-pad-row">
+                        <button class="number-btn" data-number="7">7</button>
+                        <button class="number-btn" data-number="8">8</button>
+                        <button class="number-btn" data-number="9">9</button>
+                    </div>
+                    <div class="number-pad-row">
+                        <button id="clear-input" class="number-btn number-btn-clear">削除</button>
+                        <button class="number-btn" data-number="0">0</button>
+                        <button class="number-btn" data-number="-"> - </button>
+                        <button id="submit-answer" class="number-btn number-btn-submit">答える</button>
+                    </div>
+                </div>
+
+                <div id="feedback" class="feedback"></div>
+
+                <!-- 正解不正解のモーダルオーバーレイ -->
+                <div id="result-modal" class="result-modal">
+                    <div class="result-modal-content">
+                        <div id="result-symbol" class="result-symbol"></div>
+                        <p id="result-text" class="result-text"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 画面3: 結果表示 -->
+        <div id="screen-result" class="screen">
+            <div class="result-score">
+                <div class="score-number" id="result-score"></div>
+                <div class="score-rate" id="result-rate"></div>
+            </div>
+
+            <div class="result-details">
+                <p>正解：<span id="result-correct-count"></span>問</p>
+                <p>不正解：<span id="result-incorrect-count"></span>問</p>
+            </div>
+
+            <!-- 回答履歴 -->
+            <div class="result-history">
+                <h3>回答履歴</h3>
+                <div id="answer-history" class="history-items"></div>
+            </div>
+
+            <div class="result-actions">
+                <button id="retry-quiz" class="btn btn-primary">同じ設定でもう一度</button>
+                <button id="change-settings" class="btn btn-secondary">設定を変更する</button>
+                <button id="back-to-portal" class="btn btn-secondary">アプリ一覧に戻る</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+/* 共通スタイルは base.html/style.css から継承 */
+/* Calc固有のスタイル */
+
+.settings-section {
+    margin-bottom: 30px;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.settings-section h3 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.operator-buttons, .digits-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.operator-btn, .digits-btn {
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.operator-btn.active, .digits-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.custom-settings {
+    margin-top: 15px;
+    padding: 15px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.input-group label {
+    width: 80px;
+    font-weight: bold;
+}
+
+.input-group input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
+}
+
+/* クイズ画面 */
+.quiz-problem {
+    font-size: 40px;
+}
+
+@media (max-width: 600px) {
+    .operator-buttons, .digits-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 共通スタイルの再利用 */
+.kuku-app, .calc-app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: white;
+    max-width: 100%;
+}
+
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.back-button {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 12px;
+}
+
+.app-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.screen {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.screen.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* クイズ画面共通 */
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.quiz-problem {
+    background: #f5f5f5;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.quiz-operator, .quiz-equal {
+    margin: 0 10px;
+    color: #667eea;
+}
+
+.number-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+.number-pad-row {
+    display: contents;
+}
+
+.number-btn {
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.number-btn:hover {
+    border-color: #667eea;
+    background: #f0f5ff;
+}
+
+.number-btn-submit {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* 結果画面共通 */
+.result-score {
+    text-align: center;
+    margin: 40px 0;
+}
+
+.score-number {
+    font-size: 64px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.score-rate {
+    font-size: 32px;
+    color: #666;
+}
+
+.result-history {
+    margin-bottom: 30px;
+}
+
+.history-items {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.history-item {
+    display: grid;
+    grid-template-columns: 45px auto 120px 30px;
+    gap: 12px;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+}
+
+.history-item.correct { background: #f0f9ff; }
+.history-item.incorrect { background: #ffebee; }
+
+.history-status {
+    text-align: center;
+    font-weight: bold;
+}
+.history-item.correct .history-status { color: #4CAF50; }
+.history-item.incorrect .history-status { color: #f44336; }
+
+/* ボタン共通 */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+@media (min-width: 900px) {
+    .calc-app {
+        max-width: 600px;
+        margin: 40px auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        height: auto;
+        min-height: 90vh;
+    }
+
+    .app-main {
+        padding: 40px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/calcLogic.js"></script>
+<script src="/static/js/scorer.js"></script>
+<script src="/static/js/calcMain.js"></script>
+{% endblock %}

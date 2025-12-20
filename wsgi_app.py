@@ -25,12 +25,14 @@ app.secret_key = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
 try:
     from app.portal import portal_bp
     from app.kuku import kuku_bp
+    from app.calc import calc_bp
     
     # ポータル画面（ルート）
     app.register_blueprint(portal_bp, url_prefix='/')
     
     # 各学習アプリ
     app.register_blueprint(kuku_bp, url_prefix='/kuku')
+    app.register_blueprint(calc_bp, url_prefix='/calc')
     
     # グローバルエラーハンドラ
     from flask import jsonify
