@@ -30,16 +30,19 @@
 - **フレームワーク**: Flask + Blueprint ベース
   - `app/portal/` - ポータル画面（アプリ一覧）
   - `app/kuku/` - 九九練習アプリ
-  - `app/common/` - 共通モジュール
+  - `app/shisoku/` - 四則演算練習アプリ
+  - `app/common/` - 共通モジュール（データベース、ユーティリティ）
 - **ディレクトリ構造**: モジュール化されたBlueprint設計
 
 ### フロントエンド構成
 - **テンプレート**: Jinja2 + HTML5
 - **スタイル**: CSS3（レスポンシブデザイン対応）
 - **JavaScript**: Vanilla JS
-  - `app/static/js/main.js` - メイン処理、テンキー入力管理
-  - `app/static/js/quizLogic.js` - 問題生成、シャッフル
-  - `app/static/js/scorer.js` - 採点、正答率計算
+  - `app/static/js/main.js` - 九九練習アプリのメイン処理、テンキー入力管理
+  - `app/static/js/shisokuLogic.js` - 四則演算練習アプリのメイン処理
+  - `app/static/js/quizLogic.js` - 問題生成、シャッフル（九九用）
+  - `app/static/js/scorer.js` - 採点、正答率計算（九九用）
+  - `app/static/js/pwa.js` - PWA機能（Service Worker登録等）
   - その他ユーティリティ関数
 - **PWA**: Service Worker + Web App Manifest
 
@@ -135,6 +138,32 @@ A. 30人の同時アクセスを想定し、サーバー負荷を最小化する
 ### Q. CGI 環境で Flask を動かすには？
 A. `index.cgi` が `wsgiref.handlers.CGIHandler` で WSGI アプリケーション (`wsgi_app.py`) をラップします。`SCRIPT_NAME` と `APPLICATION_ROOT` の設定が重要です。
 
+## 開発ワークフロー
+
+### ローカル開発
+```bash
+# 仮想環境の有効化（Python 3.7.11推奨）
+.\venv37\Scripts\activate
+
+# Flaskアプリの実行
+python wsgi_app.py
+```
+
+### デプロイ手順
+1. `docs/07_deployment_guide.md` を参照
+2. Lolipop! の CGI 環境に `index.cgi` 経由でデプロイ
+3. 環境変数（`SECRET_KEY` 等）を設定
+
+### トラブルシューティング
+
+**ImportError が発生する場合**
+- `docs/requirements_server.txt` のモジュールバージョンと一致しているか確認
+- Python 3.7.11 を使用しているか確認
+
+**データベースが見つからない場合**
+- `data/` ディレクトリが存在するか確認
+- `app/common/db.py` の `init_db()` を実行して初期化
+
 ---
 
-**最終更新**: 2025年12月20日
+**最終更新**: 2025年12月21日

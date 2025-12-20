@@ -21,7 +21,7 @@ def get_available_apps():
             'description': 'たし算・ひき算・かけ算・わり算を練習します',
             'icon': '/static/images/app_icons/shisoku.svg',
             'url': '/shisoku/',
-            'level': '小学1～4年生'
+            'level': '小学1～3年生'
         },
         # 将来：わり算、たし算、ひき算アプリなど
         # {
