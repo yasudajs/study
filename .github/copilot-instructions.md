@@ -16,6 +16,9 @@
 
 - **言語**: Python (Flask 2.2.5), JavaScript (Vanilla), HTML5, CSS3
 - **ホスティング**: Lolipop! レンタルサーバー（ハイスピードプラン、CGI環境）
+- **バックエンド**: サーバーのPython及びモジュールはバージョンアップできないので、以下のバージョンで動作可能にすること。
+  - Python 3.7.11
+  - 使用可能モジュールは　docs/requirements_server.txt　を参照すること
 - **データベース**: SQLite 3
 - **フロントエンド**: Vanilla JavaScript + Service Worker + Web App Manifest
 
