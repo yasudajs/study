@@ -272,7 +272,8 @@ public_html/
 
 ### 6.1 アプリ表示確認
 - ポータル: `https://your-domain.jp/` が表示される
-- 九九: `https://your-domain.jp/kuku/`、四則演算: `https://your-domain.jp/shisoku/`
+- 九九: `https://your-domain.jp/kuku/`
+- 四則演算: `https://your-domain.jp/shisoku/`
 
 ### 6.2 静的ファイル／PWA
 - 画像・CSS・JS の読み込みエラーがないこと
