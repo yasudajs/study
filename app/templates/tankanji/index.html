@@ -59,8 +59,8 @@
           <p class="instruction">漢字をノートに書いて書き取り練習しよう。</p>
           <div id="answerDisplay" class="answer-display" style="display: block;">
             <div class="reading-list">
-              <div id="kunReading" class="reading-item"></div>
               <div id="onReading" class="reading-item"></div>
+              <div id="kunReading" class="reading-item"></div>
             </div>
           </div>
           <div class="action-row">
@@ -347,12 +347,12 @@
   }
 
   .reading-item:first-child::before {
-    content: '訓読み: ';
+    content: '音読み: ';
     font-weight: bold;
   }
 
   .reading-item:last-child::before {
-    content: '音読み: ';
+    content: '訓読み: ';
     font-weight: bold;
   }
 
