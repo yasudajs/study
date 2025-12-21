@@ -427,6 +427,25 @@ class ShisokuApp {
         if (timeEl) timeEl.textContent = elapsedText;
 
         this.displayAnswerHistory();
+
+        // 履歴に保存 ✅ 追加
+        if (typeof historyManager !== 'undefined') {
+            const operatorMap = {
+                'add': 'plus',
+                'subtract': 'minus',
+                'multiply': 'multiply',
+                'divide': 'divide'
+            };
+            const mainOp = this.selectedOperations.length > 0 ? this.selectedOperations[0] : 'add';
+            historyManager.saveRecord('shisoku', {
+                operator: operatorMap[mainOp],
+                difficulty: this.difficulty,
+                range: this.rangeMode === 'custom' ? this.maxValue : 9,
+                correctCount: summary.correct_count,
+                totalCount: summary.total_count
+            });
+        }
+
         this.showScreen('screen-result');
     }
 

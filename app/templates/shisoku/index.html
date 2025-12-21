@@ -572,5 +572,6 @@ h3 {
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/shisokuLogic.js"></script>
+<script src="{{ url_for('static', filename='js/historyManager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/shisokuLogic.js') }}"></script>
 {% endblock %}

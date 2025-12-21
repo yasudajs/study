@@ -403,6 +403,16 @@ class KukuApp {
         // 回答履歴を表示
         this.displayAnswerHistory();
 
+        // 履歴に保存 ✅ 追加
+        if (typeof historyManager !== 'undefined') {
+            historyManager.saveRecord('kuku', {
+                level: this.selectedLevels.length === 1 ? this.selectedLevels[0] : -1,
+                mode: this.selectedMode,
+                correctCount: summary.correct_count,
+                totalCount: summary.total_count
+            });
+        }
+
         // 結果をサーバーに送信（1回のAPI呼び出しのみ）
         try {
             const response = await fetch('/kuku/api/result', {

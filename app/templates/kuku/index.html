@@ -703,7 +703,8 @@ progress {
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/quizLogic.js"></script>
-<script src="/static/js/scorer.js"></script>
-<script src="/static/js/main.js"></script>
+<script src="{{ url_for('static', filename='js/historyManager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/quizLogic.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scorer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}
