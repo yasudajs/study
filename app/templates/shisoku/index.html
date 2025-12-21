@@ -27,15 +27,6 @@
             </section>
 
             <section class="panel">
-                <h3>難易度</h3>
-                <div class="difficulty-buttons">
-                    <button class="difficulty-btn active" data-level="easy">かんたん</button>
-                    <button class="difficulty-btn" data-level="hard">むずかしい</button>
-                </div>
-                <p class="note">かんたん: 引き算はマイナスなし / 割り算は割り切れる問題のみ<br>むずかしい: 引き算はマイナスあり / 割り算は余りあり（商・余り入力）</p>
-            </section>
-
-            <section class="panel">
                 <h3>数値の範囲</h3>
                 <div class="range-options">
                     <label class="range-option">
@@ -51,6 +42,15 @@
                         <input id="upper-limit" type="number" min="10" max="9999" placeholder="例: 99" disabled>
                     </div>
                 </div>
+            </section>
+
+            <section class="panel" id="difficulty-panel" style="display: none;">
+                <h3>難易度</h3>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn active" data-level="easy">かんたん</button>
+                    <button class="difficulty-btn" data-level="hard">むずかしい</button>
+                </div>
+                <p class="note">かんたん: 引き算はマイナスなし / 割り算は割り切れる問題のみ<br>むずかしい: 引き算はマイナスあり / 割り算は余りあり（商・余り入力）</p>
             </section>
 
             <div class="button-group">
@@ -140,6 +140,7 @@
             <div class="result-actions">
                 <button id="retry-quiz" class="btn btn-primary">同じ設定でもう一度</button>
                 <button id="back-to-setup" class="btn btn-secondary">設定を変える</button>
+                <button id="view-history" class="btn btn-secondary" onclick="window.location.href='/rireki/'">学習履歴を見る</button>
                 <button id="back-to-portal" class="btn btn-secondary">アプリ一覧に戻る</button>
             </div>
         </div>

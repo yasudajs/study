@@ -110,6 +110,22 @@ class ShisokuApp {
             this.selectedOperations.push(op);
             btn.classList.add('active');
         }
+        this.updateDifficultyVisibility();
+    }
+
+    updateDifficultyVisibility() {
+        const difficultyPanel = document.getElementById('difficulty-panel');
+        if (!difficultyPanel) return;
+        
+        // 引き算または割り算が選択されているか確認
+        const needsDifficulty = this.selectedOperations.includes('subtract') || 
+                               this.selectedOperations.includes('divide');
+        
+        if (needsDifficulty) {
+            difficultyPanel.style.display = 'block';
+        } else {
+            difficultyPanel.style.display = 'none';
+        }
     }
 
     selectDifficulty(btn) {

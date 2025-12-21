@@ -118,6 +118,7 @@
             <div class="result-actions">
                 <button id="retry-quiz" class="btn btn-primary">もう一度</button>
                 <button id="change-level" class="btn btn-secondary">別の段で練習</button>
+                <button id="view-history" class="btn btn-secondary" onclick="window.location.href='/rireki/'">学習履歴を見る</button>
                 <button id="back-to-portal" class="btn btn-secondary">アプリ一覧に戻る</button>
             </div>
         </div>
@@ -644,11 +645,13 @@ progress {
 .result-actions {
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 10px;
 }
 
 .result-actions .btn {
     margin-bottom: 0;
+    min-width: 200px;
 }
 
 /* レスポンシブ */
