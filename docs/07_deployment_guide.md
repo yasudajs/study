@@ -90,7 +90,9 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
     DEBUG = False
     TESTING = False
-    DATABASE = os.getenv('DATABASE_PATH', 'data/study.db')
+
+    # ログ設定
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -98,9 +100,18 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
 
+class TestingConfig(Config):
+    TESTING = True
+
+# 設定マップ
+config_map = {
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'testing': TestingConfig,
+}
+
 def get_config(name='development'):
-    return {'development': DevelopmentConfig,
-            'production': ProductionConfig}.get(name, DevelopmentConfig)
+    return config_map.get(name, DevelopmentConfig)
 ```
 
 #### `wsgi_app.py`（CGI互換のWSGIアプリ）
@@ -204,9 +215,8 @@ pip freeze > requirements.txt
     - CGI のデータファイル（書込み含む）→ `600`
     - `.htaccess` → `604`
 4. 環境変数の設定（コントロールパネル等）
-    - `SECRET_KEY`、必要なら `LOG_LEVEL`、`DATABASE_PATH` 等
-5. データベース（SQLite）
-    - [data/](data) 配下に DB ファイルを配置／初期化（書込み権限に注意）
+    - `SECRET_KEY`（必須）
+    - `LOG_LEVEL`（任意）
 
 #### 5.2.1 サーバーの配置構成（例）
 以下は `public_html/study/` に設置する例です。ルート直下に `index.cgi` と `wsgi_app.py` を置き、テンプレート／静的ファイルは `app/` 配下にまとめます。

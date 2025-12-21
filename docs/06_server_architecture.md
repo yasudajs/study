@@ -131,7 +131,6 @@ study/
 │
 ├── wsgi_app.py                    # WSGI エントリーポイント（CGI互換）
 ├── requirements.txt               # Pythonパッケージ依存関係
-├── .env.example                   # 環境変数テンプレート
 ├── .gitignore
 ├── README.md
 └── docs/                          # ドキュメント
@@ -251,9 +250,9 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
     DEBUG = False
     TESTING = False
-    
-    # SQLite接続設定
-    DATABASE = os.getenv('DATABASE_PATH', 'data/study.db')
+
+    # ログ設定
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
     
     # セッション設定
     SESSION_COOKIE_SECURE = True
@@ -859,20 +858,16 @@ class QuizSession:
 | **セッション管理** | secure, httponly, samesite クッキー |
 | **レート制限** | Flask-Limiter で API レート制限（オプション） |
 
-### 7.2 環境変数設定（.env.example）
+### 7.2 環境変数設定
 
 ```
-FLASK_ENV=production
-FLASK_APP=wsgi:app
 SECRET_KEY=your-secret-key-here
-DATABASE_PATH=data/study.db
 LOG_LEVEL=INFO
 ```
 
 ---
 
 ## 8. デプロイプロセス
-
 ### 8.1 Lolipop! でのセットアップ手順
 
 1. **Python環境準備**
@@ -896,23 +891,18 @@ pip install -r requirements.txt
 ```
 
 4. **環境変数設定**
-```bash
-cp .env.example .env
-# .env を編集（データベースパスなど）
-```
+Lolipop! のコントロールパネル等から環境変数を設定します（このプロジェクトは dotenv を使用しません）。
 
-5. **データベース初期化**
-```bash
-mkdir -p data
-python3.7 -c "from __init__ import create_app; from common.db import init_db; app = create_app(); init_db(app)"
-```
+例：
+- `SECRET_KEY`
+- `LOG_LEVEL`（任意）
 
-6. **WSGI設定（.htaccess / Lolipop設定）**
+5. **WSGI設定（.htaccess / Lolipop設定）**
 ```
 # Lolipop! ハイスピードプランで WSGI アプリ設定
 ```
 
-7. **Nginxリバースプロキシ設定**
+6. **Nginxリバースプロキシ設定**
 ```nginx
 server {
     listen 80;
