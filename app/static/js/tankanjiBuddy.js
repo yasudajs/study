@@ -8,6 +8,8 @@ class TankanjiBuddy {
     this.selectedGrade = null;
     this.selectedOrder = null;
     this.selectedType = null;
+    // デバッグ
+    this._debugPrefix = '[DEBUG][tankanji]';
 
     // クイズ状態
     this.quizList = [];
@@ -77,16 +79,17 @@ class TankanjiBuddy {
     document.getElementById('restartBtn').addEventListener('click', () =>
       this.startQuiz()
     );
-    document.getElementById('goToHistoryBtn').addEventListener('click', () =>
-      this.showHistory()
-    );
+    document.getElementById('goToHistoryBtn').addEventListener('click', () => {
+      // rirekiアプリのカレンダーに遷移
+      window.location.href = '/rireki/';
+    });
     document.getElementById('backToSettingFromCompletionBtn').addEventListener('click', () =>
-      this.backToSetting()
+      this.backToSetting() // 画面移動では進捗を維持
     );
 
     // 履歴画面
     document.getElementById('backToSettingFromHistoryBtn').addEventListener('click', () =>
-      this.backToSetting()
+      this.backToSetting() // 画面移動では進捗を維持
     );
 
     // 初期画面表示
@@ -149,6 +152,7 @@ class TankanjiBuddy {
   }
 
   async startQuiz() {
+    console.log(`${this._debugPrefix} startQuiz: grade=${this.selectedGrade}, type=${this.selectedType}, order=${this.selectedOrder}`);
     // 漢字データの取得
     if (!this.allKanjiData) {
       try {
@@ -161,6 +165,7 @@ class TankanjiBuddy {
           throw new Error(result.message);
         }
         this.allKanjiData = result.data;
+        console.log(`${this._debugPrefix} kanji dataset loaded: total=${this.allKanjiData.length}`);
       } catch (error) {
         console.error('漢字データ取得エラー:', error);
         alert('漢字データが読み込めません: ' + error.message);
@@ -172,6 +177,7 @@ class TankanjiBuddy {
     const gradeKanjis = this.allKanjiData.filter(
       (item) => item.学年 === this.selectedGrade.toString()
     );
+    console.log(`${this._debugPrefix} gradeKanjis count=${gradeKanjis.length}`);
 
     if (gradeKanjis.length === 0) {
       alert('該当する漢字がありません');
@@ -181,35 +187,51 @@ class TankanjiBuddy {
     // 出題済みIDを取得
     const progressKey = this.progressKey(this.selectedGrade, this.selectedType);
     const usedIds = JSON.parse(localStorage.getItem(progressKey) || '[]');
+    console.log(`${this._debugPrefix} progressKey=${progressKey}`);
+    console.log(`${this._debugPrefix} usedIds length=${usedIds.length} sample=`, usedIds.slice(0, 20));
+    if (usedIds.length > 0) {
+      console.log(`${this._debugPrefix} usedIds type sample=${typeof usedIds[0]}`);
+    }
 
     // 出題対象の漢字を抽出
     let availableKanjis = gradeKanjis.filter(
       (item) => !usedIds.includes(item['ID'])
     );
+    console.log(`${this._debugPrefix} availableKanjis before reset count=${availableKanjis.length}`);
 
     // 全て出題済みの場合、リセット
     if (availableKanjis.length === 0) {
       localStorage.removeItem(progressKey);
       availableKanjis = gradeKanjis;
+      usedIds.length = 0;
+      console.log(`${this._debugPrefix} all used for key=${progressKey}, progress reset. availableKanjis count=${availableKanjis.length}`);
     }
 
     // 順序でソート
     if (this.selectedOrder === 'stroke') {
       availableKanjis.sort((a, b) => parseInt(a.画数) - parseInt(b.画数));
+      console.log(`${this._debugPrefix} order=stroke (画数順) applied`);
     } else if (this.selectedOrder === 'random') {
       availableKanjis = this.shuffleArray(availableKanjis);
+      console.log(`${this._debugPrefix} order=random applied`);
     }
 
     // 10問を抽出
     this.quizList = availableKanjis.slice(0, 10);
     this.currentQuestionIndex = 0;
     this.sessionHistory = [];
+    const quizIds = this.quizList.map((item) => item['ID']);
+    console.log(`${this._debugPrefix} quizList selected count=${this.quizList.length} IDs=`, quizIds);
+    const dupCount = quizIds.filter((id) => usedIds.includes(id)).length;
+    console.log(`${this._debugPrefix} duplicates vs usedIds count=${dupCount}`);
 
     // 出題済みIDリストを更新
     const newUsedIds = usedIds.concat(
       this.quizList.map((item) => item['ID'])
     );
     localStorage.setItem(progressKey, JSON.stringify(newUsedIds));
+    const verifyIds = JSON.parse(localStorage.getItem(progressKey) || '[]');
+    console.log(`${this._debugPrefix} newUsedIds length=${newUsedIds.length}, verify length=${verifyIds.length}`);
 
     // クイズ画面に遷移
     this.showQuiz();
@@ -271,6 +293,24 @@ class TankanjiBuddy {
       .join('  ');
 
     document.getElementById('completedKanjis').textContent = completedList;
+
+    // 学習履歴をhistoryManagerに保存
+    if (typeof historyManager !== 'undefined') {
+      const kanjiList = this.quizList.map((item) => item.漢字).join('');
+      const recordData = {
+        grade: this.selectedGrade,
+        type: this.selectedType,
+        order: this.selectedOrder,
+        correctCount: this.quizList.length,
+        totalCount: this.quizList.length,
+        kanjis: kanjiList
+      };
+      console.log(`${this._debugPrefix} saveRecord(tankanji):`, recordData);
+      historyManager.saveRecord('tankanji', recordData);
+    } else {
+      // historyManagerが未定義の場合は何もしない
+    }
+
     this.showScreen('completionScreen');
   }
 
@@ -307,6 +347,9 @@ class TankanjiBuddy {
   }
 
   backToSetting() {
+    // 画面移動では進捗（localStorage）はリセットしない
+    console.log(`${this._debugPrefix} backToSetting: keep progress in localStorage`);
+
     // 設定をリセット
     this.selectedGrade = null;
     this.selectedOrder = null;

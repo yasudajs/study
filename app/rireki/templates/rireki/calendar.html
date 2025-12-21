@@ -381,6 +381,7 @@
             return;
         }
 
+
         let html = `<div class="detail-header">${dateStr}の学習履歴</div>`;
         html += '<div class="detail-content">';
 
@@ -427,6 +428,28 @@
                             <span style="font-size: 0.85rem; color: #999;">${record.time}</span>
                         </div>
                         <div>正答率: <span class="${rateClass}">${record.correctRate}%</span>${record.correctRate === 100 ? ' 💮' : ''}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        }
+
+        // 単漢字練習
+        if (recordsByApp.tankanji) {
+            html += '<div class="app-records">';
+            html += '<div class="app-title">一 単漢字練習</div>';
+            recordsByApp.tankanji.forEach(record => {
+                const gradeName = `${record.grade}年生`;
+                const typeName = record.type === 'read' ? '読み練習' : '書き練習';
+                const orderName = record.order === 'stroke' ? '画数順' : 'ランダム';
+
+                html += `
+                    <div class="record-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>${gradeName}（${typeName}・${orderName}）</span>
+                            <span style="font-size: 0.85rem; color: #999;">${record.time}</span>
+                        </div>
+                        <div>出題漢字: <strong>${record.kanjis}</strong></div>
                     </div>
                 `;
             });
