@@ -64,17 +64,15 @@
           <div class="kanji-display">
             <div id="quizKanji" class="kanji-large">漢</div>
           </div>
-          <div class="action-row">
-            <button id="showAnswerBtn" class="action-btn">答え</button>
-          </div>
-          <div id="answerDisplay" class="answer-display" style="display: none;">
+          <div id="answerDisplay" class="answer-display" style="display: block;">
             <div class="reading-list">
               <div id="kunReading" class="reading-item"></div>
               <div id="onReading" class="reading-item"></div>
             </div>
-            <div class="action-row">
-              <button id="nextQuizBtn" class="action-btn">次へ</button>
-            </div>
+          </div>
+          <div class="action-row">
+            <button id="showAnswerBtn" class="action-btn">答え</button>
+            <button id="nextQuizBtn" class="action-btn next-btn" style="display: none;">次へ</button>
           </div>
         </div>
 
@@ -246,6 +244,14 @@
     background-color: #218838;
   }
 
+  .next-btn {
+    background-color: #28a745;
+  }
+
+  .next-btn:hover {
+    background-color: #218838;
+  }
+
   .start-row {
     display: flex;
     justify-content: flex-end;
@@ -303,8 +309,20 @@
     color: white;
     border: none;
     border-radius: 5px;
+    text-align: center;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
     transition: background-color 0.3s;
+  }
+
+  .action-btn.next-btn {
+    background-color: #28a745;
+  }
+
+  .action-btn.next-btn:hover {
+    background-color: #218838;
   }
 
   .action-row {

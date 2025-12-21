@@ -256,8 +256,11 @@ class TankanjiBuddy {
       document.getElementById('writeQuiz').style.display = 'none';
 
       document.getElementById('quizKanji').textContent = question.漢字;
-      document.getElementById('answerDisplay').style.display = 'none';
+      document.getElementById('answerDisplay').style.display = 'block';
       document.getElementById('showAnswerBtn').style.display = 'block';
+      document.getElementById('nextQuizBtn').style.display = 'none';
+      document.getElementById('kunReading').textContent = '';
+      document.getElementById('onReading').textContent = '';
     } else {
       document.getElementById('readQuiz').style.display = 'none';
       document.getElementById('writeQuiz').style.display = 'block';
@@ -276,6 +279,7 @@ class TankanjiBuddy {
     document.getElementById('kunReading').textContent = kunReading;
     document.getElementById('onReading').textContent = onReading;
     document.getElementById('answerDisplay').style.display = 'block';
+    document.getElementById('nextQuizBtn').style.display = 'inline-flex';
     document.getElementById('showAnswerBtn').style.display = 'none';
   }
 
