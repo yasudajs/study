@@ -431,6 +431,18 @@
       .app-main {
         padding: 15px;
       }
+
+      /* 結果(10問完了)画面のボタンは、スマホでは画面幅いっぱいに揃える */
+      #completionScreen .completion-buttons {
+        align-items: stretch;
+      }
+
+      #completionScreen .completion-buttons button,
+      #completionScreen .completion-buttons .action-btn,
+      #completionScreen .completion-buttons .back-btn {
+        width: 100%;
+        min-width: 0;
+      }
     }
 
     @media (min-width: 600px) {
