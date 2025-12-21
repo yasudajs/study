@@ -440,13 +440,12 @@
             html += '<div class="app-title">一 単漢字練習</div>';
             recordsByApp.tankanji.forEach(record => {
                 const gradeName = `${record.grade}年生`;
-                const typeName = record.type === 'read' ? '読み練習' : '書き練習';
                 const orderName = record.order === 'stroke' ? '画数順' : 'ランダム';
 
                 html += `
                     <div class="record-item">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span>${gradeName}（${typeName}・${orderName}）</span>
+                            <span>${gradeName}（${orderName}）</span>
                             <span style="font-size: 0.85rem; color: #999;">${record.time}</span>
                         </div>
                         <div>出題漢字: <strong>${record.kanjis}</strong></div>

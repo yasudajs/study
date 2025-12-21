@@ -6,9 +6,6 @@ class Config:
     DEBUG = False
     TESTING = False
     
-    # SQLite接続設定
-    DATABASE = os.getenv('DATABASE_PATH', 'data/study.db')
-    
     # セッション設定
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
@@ -29,7 +26,6 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     """テスト環境設定"""
     TESTING = True
-    DATABASE = 'data/test.db'
 
 # 設定マップ
 config_map = {

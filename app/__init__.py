@@ -4,7 +4,6 @@ Flask アプリケーションファクトリー
 from flask import Flask
 from config import get_config
 from app.common.utils import init_logger
-from app.common.db import init_db
 from flask import send_from_directory
 
 def create_app(config_name='development'):
@@ -26,10 +25,6 @@ def create_app(config_name='development'):
     
     # ロギング初期化
     init_logger(app)
-    
-    # データベース初期化
-    with app.app_context():
-        init_db(app)
     
     # Blueprint登録
     from app.portal import portal_bp

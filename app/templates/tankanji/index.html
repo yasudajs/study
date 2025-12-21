@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}単漢字練習 - 漢字の読み書き練習アプリ{% endblock %}
+{% block title %}単漢字練習 - 漢字の読み練習アプリ{% endblock %}
 
-{% block description %}小学生向け漢字の読み書き練習アプリ。学年別に漢字を練習できます。{% endblock %}
+{% block description %}小学生向け漢字の読み練習アプリ。学年別に漢字を練習できます。{% endblock %}
 
 {% block content %}
 <div class="tankanji-app">
@@ -15,7 +15,7 @@
       <!-- 設定画面 -->
       <div id="settingScreen" class="screen active">
     
-        <h2>学年と練習方法を選択</h2>
+        <h2>学年と出題の順序を選択</h2>
 
         <!-- 学年選択 -->
         <section class="panel">
@@ -31,16 +31,7 @@
           </select>
         </section>
 
-        <!-- 練習種別選択（学年選択後に表示） -->
-        <section id="typeSection" class="panel" style="display: none;">
-          <h3>練習の種別を選択してください</h3>
-          <div class="button-group">
-            <button id="readTypeBtn" class="option-btn" data-type="read">読み練習</button>
-            <button id="writeTypeBtn" class="option-btn" data-type="write">書き練習</button>
-          </div>
-        </section>
-
-        <!-- 順序選択（練習種別選択後に表示） -->
+        <!-- 順序選択（学年選択後に表示） -->
         <section id="orderSection" class="panel" style="display: none;">
           <h3>出題の順序を選択してください</h3>
           <div class="button-group">
@@ -49,7 +40,7 @@
           </div>
         </section>
 
-        <!-- 開始ボタン（種別選択後に表示） -->
+        <!-- 開始ボタン（順序選択後に表示） -->
         <div id="startSection" class="start-row" style="display: none;">
           <button id="startBtn" class="start-btn">出題を開始する</button>
         </div>
@@ -64,6 +55,8 @@
           <div class="kanji-display">
             <div id="quizKanji" class="kanji-large">漢</div>
           </div>
+          <div id="strokeCount" class="stroke-count">画数：-</div>
+          <p class="instruction">漢字をノートに書いて書き取り練習しよう。</p>
           <div id="answerDisplay" class="answer-display" style="display: block;">
             <div class="reading-list">
               <div id="kunReading" class="reading-item"></div>
@@ -76,16 +69,6 @@
           </div>
         </div>
 
-        <!-- 書き練習 -->
-        <div id="writeQuiz" class="quiz-content" style="display: none;">
-          <div class="kanji-display">
-            <div id="writeKanji" class="kanji-large-write">漢</div>
-          </div>
-          <p class="instruction">ノートに書いて練習してください</p>
-          <div class="action-row">
-            <button id="nextWriteQuizBtn" class="action-btn">次へ</button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -297,6 +280,7 @@
     margin-bottom: 10px;
     font-weight: bold;
     color: #555;
+    font-size: 2rem;
   }
 
   .action-btn {
@@ -377,6 +361,13 @@
     font-size: 1.1rem;
     color: #666;
     margin: 20px 0;
+  }
+
+  .stroke-count {
+    text-align: center;
+    font-size: 2rem;
+    color: #666;
+    margin: 12px 0 0;
   }
 
   .completion-content {

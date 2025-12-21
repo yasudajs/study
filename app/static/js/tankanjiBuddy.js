@@ -7,7 +7,7 @@ class TankanjiBuddy {
     // 設定
     this.selectedGrade = null;
     this.selectedOrder = null;
-    this.selectedType = null;
+    this.selectedType = 'read';
     // デバッグ
     this._debugPrefix = '[DEBUG][tankanji]';
 
@@ -16,8 +16,8 @@ class TankanjiBuddy {
     this.currentQuestionIndex = 0;
     this.sessionHistory = [];
 
-    // ローカルストレージのキープレフィックス
-    this.progressKey = (grade, type) => `tankanji_progress_${grade}_${type}`;
+    // ローカルストレージのキープレフィックス（練習種別はread固定）
+    this.progressKey = (grade) => `tankanji_progress_${grade}_read`;
     this.historyKey = 'tankanji_history';
 
     // キャッシュ
@@ -49,14 +49,6 @@ class TankanjiBuddy {
       this.onOrderSelect(e)
     );
 
-    // 練習種別選択ボタン
-    document.getElementById('readTypeBtn').addEventListener('click', (e) =>
-      this.onTypeSelect(e)
-    );
-    document.getElementById('writeTypeBtn').addEventListener('click', (e) =>
-      this.onTypeSelect(e)
-    );
-
     // 開始ボタン
     document.getElementById('startBtn').addEventListener('click', () =>
       this.startQuiz()
@@ -67,11 +59,6 @@ class TankanjiBuddy {
       this.showAnswer()
     );
     document.getElementById('nextQuizBtn').addEventListener('click', () =>
-      this.nextQuestion()
-    );
-
-    // 書き練習
-    document.getElementById('nextWriteQuizBtn').addEventListener('click', () =>
       this.nextQuestion()
     );
 
@@ -100,19 +87,20 @@ class TankanjiBuddy {
     this.selectedGrade = e.target.value ? parseInt(e.target.value) : null;
 
     if (this.selectedGrade) {
-      document.getElementById('typeSection').style.display = 'block';
+      // read固定。学年選択後に順序選択を表示
+      this.selectedType = 'read';
+
       // リセット
       this.selectedOrder = null;
-      this.selectedType = null;
-      document.getElementById('orderSection').style.display = 'none';
+      document.getElementById('orderSection').style.display = 'block';
       document.getElementById('startSection').style.display = 'none';
+
       // 順序ボタンのリセット
-      document.querySelectorAll('.option-btn').forEach((btn) => {
+      document.querySelectorAll('#orderSection .option-btn').forEach((btn) => {
         btn.classList.remove('selected');
       });
     } else {
       document.getElementById('orderSection').style.display = 'none';
-      document.getElementById('typeSection').style.display = 'none';
       document.getElementById('startSection').style.display = 'none';
     }
   }
@@ -130,26 +118,13 @@ class TankanjiBuddy {
     document.getElementById('startSection').style.display = 'flex';
   }
 
-  onTypeSelect(e) {
-    this.selectedType = e.target.dataset.type;
-    e.target.classList.add('selected');
-    // 他のボタンから選択を外す
-    document.querySelectorAll('#typeSection .option-btn').forEach((btn) => {
-      if (btn !== e.target) {
-        btn.classList.remove('selected');
-      }
-    });
-
-    document.getElementById('orderSection').style.display = 'block';
-    this.selectedOrder = null;
-    document.getElementById('startSection').style.display = 'none';
-    document.querySelectorAll('#orderSection .option-btn').forEach((btn) => {
-      btn.classList.remove('selected');
-    });
-  }
-
   async startQuiz() {
-    console.log(`${this._debugPrefix} startQuiz: grade=${this.selectedGrade}, type=${this.selectedType}, order=${this.selectedOrder}`);
+    console.log(`${this._debugPrefix} startQuiz: grade=${this.selectedGrade}, type=read, order=${this.selectedOrder}`);
+
+    if (!this.selectedGrade || !this.selectedOrder) {
+      alert('学年と出題の順序を選択してください');
+      return;
+    }
     // 漢字データの取得
     if (!this.allKanjiData) {
       try {
@@ -182,7 +157,7 @@ class TankanjiBuddy {
     }
 
     // 出題済みIDを取得
-    const progressKey = this.progressKey(this.selectedGrade, this.selectedType);
+    const progressKey = this.progressKey(this.selectedGrade);
     const usedIds = JSON.parse(localStorage.getItem(progressKey) || '[]');
     console.log(`${this._debugPrefix} progressKey=${progressKey}`);
     console.log(`${this._debugPrefix} usedIds length=${usedIds.length} sample=`, usedIds.slice(0, 20));
@@ -251,22 +226,19 @@ class TankanjiBuddy {
       this.currentQuestionIndex + 1
     }問目`;
 
-    if (this.selectedType === 'read') {
-      document.getElementById('readQuiz').style.display = 'block';
-      document.getElementById('writeQuiz').style.display = 'none';
+    document.getElementById('readQuiz').style.display = 'block';
 
-      document.getElementById('quizKanji').textContent = question.漢字;
-      document.getElementById('answerDisplay').style.display = 'block';
-      document.getElementById('showAnswerBtn').style.display = 'block';
-      document.getElementById('nextQuizBtn').style.display = 'none';
-      document.getElementById('kunReading').textContent = '';
-      document.getElementById('onReading').textContent = '';
-    } else {
-      document.getElementById('readQuiz').style.display = 'none';
-      document.getElementById('writeQuiz').style.display = 'block';
-
-      document.getElementById('writeKanji').textContent = question.漢字;
+    document.getElementById('quizKanji').textContent = question.漢字;
+    const strokeCountEl = document.getElementById('strokeCount');
+    if (strokeCountEl) {
+      const strokes = question.画数 || '不明';
+      strokeCountEl.textContent = `画数：${strokes}`;
     }
+    document.getElementById('answerDisplay').style.display = 'block';
+    document.getElementById('showAnswerBtn').style.display = 'block';
+    document.getElementById('nextQuizBtn').style.display = 'none';
+    document.getElementById('kunReading').textContent = '';
+    document.getElementById('onReading').textContent = '';
 
     this.sessionHistory.push(question);
   }
@@ -332,9 +304,6 @@ class TankanjiBuddy {
         <div class="history-session">
           <div class="session-date">${session.date}</div>
           <div class="session-grade">学年: ${session.grade}年</div>
-          <div class="session-type">種別: ${
-              session.type === 'read' ? '読み練習' : '書き練習'
-            }</div>
           <div class="session-kanjis">${session.kanjis}</div>
         </div>
       `
@@ -354,14 +323,13 @@ class TankanjiBuddy {
     // 設定をリセット
     this.selectedGrade = null;
     this.selectedOrder = null;
-    this.selectedType = null;
+    this.selectedType = 'read';
 
     document.getElementById('gradeSelect').value = '';
     document.getElementById('orderSection').style.display = 'none';
-    document.getElementById('typeSection').style.display = 'none';
     document.getElementById('startSection').style.display = 'none';
 
-    document.querySelectorAll('.option-btn').forEach((btn) => {
+    document.querySelectorAll('#orderSection .option-btn').forEach((btn) => {
       btn.classList.remove('selected');
     });
 
