@@ -1,53 +1,59 @@
 {% extends 'base.html' %}
 
+{% block title %}単漢字練習 - 漢字の読み書き練習アプリ{% endblock %}
+
+{% block description %}小学生向け漢字の読み書き練習アプリ。学年別に漢字を練習できます。{% endblock %}
+
 {% block content %}
-<div id="app" class="tankanji-app">
-  <!-- 設定画面 -->
-  <div id="settingScreen" class="screen">
-    <h2>単漢字練習</h2>
+<div class="tankanji-app">
+    <header class="app-header">
+        <a href="/" class="back-button">← 戻る</a>
+        <h1>単漢字練習</h1>
+    </header>
+
+    <main class="app-main">
+      <!-- 設定画面 -->
+      <div id="settingScreen" class="screen active">
     
-    <!-- 学年選択 -->
-    <div class="setting-section">
-      <label for="gradeSelect">学年を選択してください</label>
-      <select id="gradeSelect">
-        <option value="">-- 選択してください --</option>
-        <option value="1">1年生</option>
-        <option value="2">2年生</option>
-        <option value="3">3年生</option>
-        <option value="4">4年生</option>
-        <option value="5">5年生</option>
-        <option value="6">6年生</option>
-      </select>
-    </div>
+        <h2>学年と練習方法を選択</h2>
 
-    <!-- 順序選択（学年選択後に表示） -->
-    <div id="orderSection" class="setting-section" style="display: none;">
-      <label>出題の順序を選択してください</label>
-      <div class="button-group">
-        <button id="strokeOrderBtn" class="option-btn" data-order="stroke">画数の少ない順</button>
-        <button id="randomOrderBtn" class="option-btn" data-order="random">ランダム</button>
-      </div>
-    </div>
+        <!-- 学年選択 -->
+        <section class="panel">
+          <h3>学年を選択してください</h3>
+          <select id="gradeSelect">
+            <option value="">-- 選択してください --</option>
+            <option value="1">1年生</option>
+            <option value="2">2年生</option>
+            <option value="3">3年生</option>
+            <option value="4">4年生</option>
+            <option value="5">5年生</option>
+            <option value="6">6年生</option>
+          </select>
+        </section>
 
-    <!-- 練習種別選択（順序選択後に表示） -->
-    <div id="typeSection" class="setting-section" style="display: none;">
-      <label>練習の種別を選択してください</label>
-      <div class="button-group">
-        <button id="readTypeBtn" class="option-btn" data-type="read">読み練習</button>
-        <button id="writeTypeBtn" class="option-btn" data-type="write">書き練習</button>
-      </div>
-    </div>
+        <!-- 順序選択（学年選択後に表示） -->
+        <section id="orderSection" class="panel" style="display: none;">
+          <h3>出題の順序を選択してください</h3>
+          <div class="button-group">
+            <button id="strokeOrderBtn" class="option-btn" data-order="stroke">画数の少ない順</button>
+            <button id="randomOrderBtn" class="option-btn" data-order="random">ランダム</button>
+          </div>
+        </section>
 
-    <!-- 開始ボタン（種別選択後に表示） -->
-    <div id="startSection" class="setting-section" style="display: none;">
-      <button id="startBtn" class="start-btn">出題を開始する</button>
-    </div>
-  </div>
+        <!-- 練習種別選択（順序選択後に表示） -->
+        <section id="typeSection" class="panel" style="display: none;">
+          <h3>練習の種別を選択してください</h3>
+          <div class="button-group">
+            <button id="readTypeBtn" class="option-btn" data-type="read">読み練習</button>
+            <button id="writeTypeBtn" class="option-btn" data-type="write">書き練習</button>
+          </div>
+        </section>
 
-  <!-- 出題画面 -->
-  <div id="quizScreen" class="screen" style="display: none;">
+        <!-- 開始ボタン（種別選択後に表示） -->
+        <div id="startSection" style="display: none;">
+          <button id="startBtn" class="start-btn">出題を開始する</button>
+        </div>
     <div class="quiz-header">
-      <span class="quiz-count"><span id="currentQuestion">1</span> / 10</span>
       <button id="backToSettingBtn" class="back-btn">戻る</button>
     </div>
 
@@ -100,14 +106,49 @@
       </div>
     </div>
   </div>
+    </main>
 </div>
 
 <style>
   .tankanji-app {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-height: 100vh;
+    background: white;
+    width: 100%;
+  }
+
+  .app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     padding: 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  .app-header h1 {
+    margin: 0;
+    font-size: 28px;
+  }
+
+  .back-button {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+
+  .app-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
   }
 
   .screen {
@@ -118,18 +159,30 @@
     display: block;
   }
 
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+  }
+
+  h3 {
+    margin: 0 0 10px;
+    color: #333;
+  }
+
+  .panel {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #e5e7eb;
+  }
+
   .setting-section {
     margin: 20px 0;
   }
 
-  .setting-section label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: bold;
-    font-size: 1.1rem;
-  }
-
-  .setting-section select {
+  #gradeSelect {
     width: 100%;
     padding: 10px;
     font-size: 1rem;
@@ -146,34 +199,37 @@
   .option-btn {
     flex: 1;
     min-width: 120px;
-    padding: 12px;
+    padding: 14px;
     font-size: 1rem;
-    background-color: #f0f0f0;
-    border: 2px solid #ccc;
-    border-radius: 5px;
+    background-color: white;
+    border: 2px solid #ddd;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s ease;
   }
 
   .option-btn:hover {
-    background-color: #e0e0e0;
+    border-color: #1d976c;
+    background: #eefbf3;
   }
 
   .option-btn.selected {
-    background-color: #007bff;
+    background-color: #1d976c;
     color: white;
-    border-color: #0056b3;
+    border-color: #1d976c;
   }
 
   .start-btn {
-    padding: 15px;
-    font-size: 1.2rem;
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
     background-color: #28a745;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s;
+    font-weight: bold;
   }
 
   .start-btn:hover {
@@ -182,14 +238,9 @@
 
   .quiz-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: 20px;
-  }
-
-  .quiz-count {
-    font-size: 1.1rem;
-    font-weight: bold;
   }
 
   .back-btn {
@@ -313,6 +364,33 @@
       min-width: auto;
     }
   }
+
+    @media (max-width: 599px) {
+      .app-header {
+        padding: 15px;
+      }
+      .app-header h1 {
+        font-size: 22px;
+      }
+      .app-main {
+        padding: 15px;
+      }
+    }
+
+    @media (min-width: 600px) {
+      .tankanji-app {
+        max-width: 600px;
+        margin: 40px auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        height: auto;
+        min-height: 90vh;
+      }
+
+      .app-main {
+        padding: 40px;
+      }
+    }
 </style>
 {% endblock %}
 
