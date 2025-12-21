@@ -208,56 +208,30 @@ class KukuApp {
     /**
      * クイズ開始
      */
-    async startQuiz() {
+    startQuiz() {
         if (this.selectedLevels.length === 0) {
             alert('段を選択してください');
             return;
         }
 
-        // サーバー側にセッション作成リクエスト（API呼び出し削減版）
-        try {
-            const response = await fetch('/kuku/api/session', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    levels: this.selectedLevels,
-                    mode: this.selectedMode
-                })
-            });
+        // クイズロジック初期化（完全ローカル）
+        this.quizLogic = new QuizLogic(this.selectedLevels, this.selectedMode);
+        const quizzes = this.quizLogic.generateQuizzes();
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Session creation failed: ${JSON.stringify(errorData)}`);
-            }
+        // 採点器初期化
+        this.scorer = new Scorer();
 
-            const data = await response.json();
-            this.sessionId = data.session_id;
+        // 状態保存（ローカル専用）
+        this.stateManager.updateState({
+            sessionId: null,
+            selectedLevels: this.selectedLevels,
+            selectedMode: this.selectedMode,
+            totalQuizzes: quizzes.length
+        });
 
-            // クイズロジック初期化
-            this.quizLogic = new QuizLogic(this.selectedLevels, this.selectedMode);
-            const quizzes = this.quizLogic.generateQuizzes();
-
-            // 採点器初期化
-            this.scorer = new Scorer();
-
-            // 状態保存
-            this.stateManager.updateState({
-                sessionId: this.sessionId,
-                selectedLevels: this.selectedLevels,
-                selectedMode: this.selectedMode,
-                totalQuizzes: quizzes.length
-            });
-
-            // クイズ画面へ
-            this.showScreen('screen-quiz');
-            this.displayQuiz();
-
-        } catch (error) {
-            console.error('Error starting quiz:', error);
-            alert('クイズ開始時にエラーが発生しました: ' + error.message);
-        }
+        // クイズ画面へ
+        this.showScreen('screen-quiz');
+        this.displayQuiz();
     }
 
     /**
@@ -387,7 +361,7 @@ class KukuApp {
     /**
      * 結果表示（全てクライアント側で計算）
      */
-    async showResult() {
+    showResult() {
         const summary = this.scorer.getSummary();
 
         // 結果を画面に表示
@@ -411,28 +385,6 @@ class KukuApp {
                 correctCount: summary.correct_count,
                 totalCount: summary.total_count
             });
-        }
-
-        // 結果をサーバーに送信（1回のAPI呼び出しのみ）
-        try {
-            const response = await fetch('/kuku/api/result', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    session_id: this.sessionId,
-                    correct_count: summary.correct_count,
-                    total_count: summary.total_count,
-                    correct_rate: summary.correct_rate
-                })
-            });
-
-            if (!response.ok) {
-                console.error('Failed to save result');
-            }
-        } catch (error) {
-            console.error('Error saving result:', error);
         }
 
         // 状態保存
