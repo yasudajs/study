@@ -31,21 +31,21 @@
           </select>
         </section>
 
-        <!-- 順序選択（学年選択後に表示） -->
-        <section id="orderSection" class="panel" style="display: none;">
-          <h3>出題の順序を選択してください</h3>
-          <div class="button-group">
-            <button id="strokeOrderBtn" class="option-btn" data-order="stroke">画数の少ない順</button>
-            <button id="randomOrderBtn" class="option-btn" data-order="random">ランダム</button>
-          </div>
-        </section>
-
-        <!-- 練習種別選択（順序選択後に表示） -->
+        <!-- 練習種別選択（学年選択後に表示） -->
         <section id="typeSection" class="panel" style="display: none;">
           <h3>練習の種別を選択してください</h3>
           <div class="button-group">
             <button id="readTypeBtn" class="option-btn" data-type="read">読み練習</button>
             <button id="writeTypeBtn" class="option-btn" data-type="write">書き練習</button>
+          </div>
+        </section>
+
+        <!-- 順序選択（練習種別選択後に表示） -->
+        <section id="orderSection" class="panel" style="display: none;">
+          <h3>出題の順序を選択してください</h3>
+          <div class="button-group">
+            <button id="strokeOrderBtn" class="option-btn" data-order="stroke">画数の少ない順</button>
+            <button id="randomOrderBtn" class="option-btn" data-order="random">ランダム</button>
           </div>
         </section>
 
@@ -64,7 +64,9 @@
           <div class="kanji-display">
             <div id="quizKanji" class="kanji-large">漢</div>
           </div>
-          <button id="showAnswerBtn" class="action-btn">答え</button>
+          <div class="action-row">
+            <button id="showAnswerBtn" class="action-btn">答え</button>
+          </div>
           <div id="answerDisplay" class="answer-display" style="display: none;">
             <div class="reading-list">
               <div id="kunReading" class="reading-item"></div>
@@ -440,5 +442,6 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/historyManager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/tankanjiBuddy.js') }}"></script>
 {% endblock %}
