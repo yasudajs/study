@@ -50,40 +50,47 @@
         </section>
 
         <!-- 開始ボタン（種別選択後に表示） -->
-        <div id="startSection" style="display: none;">
+        <div id="startSection" class="start-row" style="display: none;">
           <button id="startBtn" class="start-btn">出題を開始する</button>
         </div>
-    <div class="quiz-header">
-      <button id="backToSettingBtn" class="back-btn">戻る</button>
-    </div>
-
-    <!-- 読み練習 -->
-    <div id="readQuiz" class="quiz-content" style="display: none;">
-      <div class="kanji-display">
-        <div id="quizKanji" class="kanji-large">漢</div>
       </div>
-      <button id="showAnswerBtn" class="action-btn">答え</button>
-      <div id="answerDisplay" class="answer-display" style="display: none;">
-        <div class="reading-list">
-          <div id="kunReading" class="reading-item"></div>
-          <div id="onReading" class="reading-item"></div>
+
+    <!-- 出題画面 -->
+    <div id="quizScreen" class="screen">
+      <div class="quiz-meta"><span id="currentQuestion">1問目</span></div>
+      <div class="quiz-content-wrapper">
+        <!-- 読み練習 -->
+        <div id="readQuiz" class="quiz-content" style="display: none;">
+          <div class="kanji-display">
+            <div id="quizKanji" class="kanji-large">漢</div>
+          </div>
+          <button id="showAnswerBtn" class="action-btn">答え</button>
+          <div id="answerDisplay" class="answer-display" style="display: none;">
+            <div class="reading-list">
+              <div id="kunReading" class="reading-item"></div>
+              <div id="onReading" class="reading-item"></div>
+            </div>
+            <div class="action-row">
+              <button id="nextQuizBtn" class="action-btn">次へ</button>
+            </div>
+          </div>
         </div>
-        <button id="nextQuizBtn" class="action-btn">次へ</button>
-      </div>
-    </div>
 
-    <!-- 書き練習 -->
-    <div id="writeQuiz" class="quiz-content" style="display: none;">
-      <div class="kanji-display">
-        <div id="writeKanji" class="kanji-large-write">漢</div>
+        <!-- 書き練習 -->
+        <div id="writeQuiz" class="quiz-content" style="display: none;">
+          <div class="kanji-display">
+            <div id="writeKanji" class="kanji-large-write">漢</div>
+          </div>
+          <p class="instruction">ノートに書いて練習してください</p>
+          <div class="action-row">
+            <button id="nextWriteQuizBtn" class="action-btn">次へ</button>
+          </div>
+        </div>
       </div>
-      <p class="instruction">ノートに書いて練習してください</p>
-      <button id="nextWriteQuizBtn" class="action-btn">次へ</button>
     </div>
-  </div>
 
   <!-- 学習履歴画面 -->
-  <div id="historyScreen" class="screen" style="display: none;">
+  <div id="historyScreen" class="screen">
     <div class="history-header">
       <h2>学習履歴</h2>
       <button id="backToSettingFromHistoryBtn" class="back-btn">戻る</button>
@@ -94,7 +101,7 @@
   </div>
 
   <!-- 10問完了画面 -->
-  <div id="completionScreen" class="screen" style="display: none;">
+  <div id="completionScreen" class="screen">
     <div class="completion-content">
       <h2>お疲れ様でした！</h2>
       <p id="completionMessage">10問を出題しました</p>
@@ -220,8 +227,9 @@
   }
 
   .start-btn {
-    width: 100%;
-    padding: 14px;
+    width: auto;
+    min-width: 180px;
+    padding: 14px 20px;
     font-size: 1.1rem;
     background-color: #28a745;
     color: white;
@@ -234,6 +242,12 @@
 
   .start-btn:hover {
     background-color: #218838;
+  }
+
+  .start-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
   }
 
   .quiz-header {
@@ -268,10 +282,20 @@
     font-family: 'Hiragino Mincho ProN', 'Noto Serif JP', serif;
   }
 
+  .quiz-meta {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #555;
+  }
+
   .action-btn {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
+    width: auto;
+    min-width: 140px;
+    padding: 12px 20px;
+    margin: 0;
     font-size: 1rem;
     background-color: #007bff;
     color: white;
@@ -279,6 +303,12 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+  }
+
+  .action-row {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0 10px;
   }
 
   .action-btn:hover {
@@ -335,6 +365,11 @@
     flex-direction: column;
     gap: 10px;
     margin-top: 20px;
+    align-items: flex-end;
+  }
+
+  .completion-buttons button {
+    min-width: 180px;
   }
 
   .history-header {

@@ -15,7 +15,7 @@ class TankanjiBuddy {
     this.sessionHistory = [];
 
     // ローカルストレージのキープレフィックス
-    this.progressKey = (grade) => `tankanji_progress_${grade}`;
+    this.progressKey = (grade, type) => `tankanji_progress_${grade}_${type}`;
     this.historyKey = 'tankanji_history';
 
     // キャッシュ
@@ -58,11 +58,6 @@ class TankanjiBuddy {
     // 開始ボタン
     document.getElementById('startBtn').addEventListener('click', () =>
       this.startQuiz()
-    );
-
-    // 出題画面のイベント
-    document.getElementById('backToSettingBtn').addEventListener('click', () =>
-      this.backToSetting()
     );
 
     // 読み練習
@@ -150,7 +145,7 @@ class TankanjiBuddy {
     });
 
     // 開始ボタンを表示
-    document.getElementById('startSection').style.display = 'block';
+    document.getElementById('startSection').style.display = 'flex';
   }
 
   async startQuiz() {
@@ -184,7 +179,7 @@ class TankanjiBuddy {
     }
 
     // 出題済みIDを取得
-    const progressKey = this.progressKey(this.selectedGrade);
+    const progressKey = this.progressKey(this.selectedGrade, this.selectedType);
     const usedIds = JSON.parse(localStorage.getItem(progressKey) || '[]');
 
     // 出題対象の漢字を抽出
@@ -233,8 +228,9 @@ class TankanjiBuddy {
     }
 
     const question = this.quizList[this.currentQuestionIndex];
-    document.getElementById('currentQuestion').textContent =
-      this.currentQuestionIndex + 1;
+    document.getElementById('currentQuestion').textContent = `${
+      this.currentQuestionIndex + 1
+    }問目`;
 
     if (this.selectedType === 'read') {
       document.getElementById('readQuiz').style.display = 'block';
