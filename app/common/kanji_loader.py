@@ -18,9 +18,13 @@ class KanjiLoader:
                 'data',
                 'es_kanji.csv'
             )
-            with open(csv_path, 'r', encoding='utf-8') as f:
+            with open(csv_path, 'r', encoding='utf-8-sig') as f:
                 reader = csv.DictReader(f)
-                cls._data = list(reader)
+                # キー名から余分な空白を削除
+                cls._data = [
+                    {key.strip(): value for key, value in row.items()}
+                    for row in reader
+                ]
         return cls._data
 
     @classmethod

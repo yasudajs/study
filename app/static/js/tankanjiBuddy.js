@@ -184,7 +184,7 @@ class TankanjiBuddy {
 
     // 出題対象の漢字を抽出
     let availableKanjis = gradeKanjis.filter(
-      (item) => !usedIds.includes(item.ID)
+      (item) => !usedIds.includes(item['ID'])
     );
 
     // 全て出題済みの場合、リセット
@@ -207,7 +207,7 @@ class TankanjiBuddy {
 
     // 出題済みIDリストを更新
     const newUsedIds = usedIds.concat(
-      this.quizList.map((item) => item.ID)
+      this.quizList.map((item) => item['ID'])
     );
     localStorage.setItem(progressKey, JSON.stringify(newUsedIds));
 
