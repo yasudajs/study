@@ -3,18 +3,16 @@
  * キャッシング戦略とオフライン対応
  */
 
-const CACHE_NAME = 'kuku-app-v3';
+const CACHE_NAME = 'kuku-app-v4';
 const ASSETS_TO_CACHE = [
     '/',
     '/static/css/style.css',
     '/static/css/responsive.css',
     '/static/js/pwa.js',
-    '/static/js/quizLogic.js',
-    '/static/js/scorer.js',
-    '/static/js/main.js',
-    '/kuku/',
-    '/kuku/api/session',
-    '/kuku/api/result'
+    '/static/manifest.json',
+    '/static/favicon.ico'
+    // API エンドポイント（POST）はキャッシュしない
+    // 各アプリのキャッシュは個別に管理
 ];
 
 // インストール時
