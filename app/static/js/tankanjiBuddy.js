@@ -100,11 +100,11 @@ class TankanjiBuddy {
     this.selectedGrade = e.target.value ? parseInt(e.target.value) : null;
 
     if (this.selectedGrade) {
-      document.getElementById('orderSection').style.display = 'block';
+      document.getElementById('typeSection').style.display = 'block';
       // リセット
       this.selectedOrder = null;
       this.selectedType = null;
-      document.getElementById('typeSection').style.display = 'none';
+      document.getElementById('orderSection').style.display = 'none';
       document.getElementById('startSection').style.display = 'none';
       // 順序ボタンのリセット
       document.querySelectorAll('.option-btn').forEach((btn) => {
@@ -127,14 +127,7 @@ class TankanjiBuddy {
       }
     });
 
-    // 練習種別選択を表示
-    document.getElementById('typeSection').style.display = 'block';
-    this.selectedType = null;
-    document.getElementById('startSection').style.display = 'none';
-    // 種別ボタンのリセット
-    document.querySelectorAll('#typeSection .option-btn').forEach((btn) => {
-      btn.classList.remove('selected');
-    });
+    document.getElementById('startSection').style.display = 'flex';
   }
 
   onTypeSelect(e) {
@@ -147,8 +140,12 @@ class TankanjiBuddy {
       }
     });
 
-    // 開始ボタンを表示
-    document.getElementById('startSection').style.display = 'flex';
+    document.getElementById('orderSection').style.display = 'block';
+    this.selectedOrder = null;
+    document.getElementById('startSection').style.display = 'none';
+    document.querySelectorAll('#orderSection .option-btn').forEach((btn) => {
+      btn.classList.remove('selected');
+    });
   }
 
   async startQuiz() {
