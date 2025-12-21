@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="app" class="tankanji-app">
+  <!-- 設定画面 -->
+  <div id="settingScreen" class="screen">
+    <h2>単漢字練習</h2>
+    
+    <!-- 学年選択 -->
+    <div class="setting-section">
+      <label for="gradeSelect">学年を選択してください</label>
+      <select id="gradeSelect">
+        <option value="">-- 選択してください --</option>
+        <option value="1">1年生</option>
+        <option value="2">2年生</option>
+        <option value="3">3年生</option>
+        <option value="4">4年生</option>
+        <option value="5">5年生</option>
+        <option value="6">6年生</option>
+      </select>
+    </div>
+
+    <!-- 順序選択（学年選択後に表示） -->
+    <div id="orderSection" class="setting-section" style="display: none;">
+      <label>出題の順序を選択してください</label>
+      <div class="button-group">
+        <button id="strokeOrderBtn" class="option-btn" data-order="stroke">画数の少ない順</button>
+        <button id="randomOrderBtn" class="option-btn" data-order="random">ランダム</button>
+      </div>
+    </div>
+
+    <!-- 練習種別選択（順序選択後に表示） -->
+    <div id="typeSection" class="setting-section" style="display: none;">
+      <label>練習の種別を選択してください</label>
+      <div class="button-group">
+        <button id="readTypeBtn" class="option-btn" data-type="read">読み練習</button>
+        <button id="writeTypeBtn" class="option-btn" data-type="write">書き練習</button>
+      </div>
+    </div>
+
+    <!-- 開始ボタン（種別選択後に表示） -->
+    <div id="startSection" class="setting-section" style="display: none;">
+      <button id="startBtn" class="start-btn">出題を開始する</button>
+    </div>
+  </div>
+
+  <!-- 出題画面 -->
+  <div id="quizScreen" class="screen" style="display: none;">
+    <div class="quiz-header">
+      <span class="quiz-count"><span id="currentQuestion">1</span> / 10</span>
+      <button id="backToSettingBtn" class="back-btn">戻る</button>
+    </div>
+
+    <!-- 読み練習 -->
+    <div id="readQuiz" class="quiz-content" style="display: none;">
+      <div class="kanji-display">
+        <div id="quizKanji" class="kanji-large">漢</div>
+      </div>
+      <button id="showAnswerBtn" class="action-btn">答え</button>
+      <div id="answerDisplay" class="answer-display" style="display: none;">
+        <div class="reading-list">
+          <div id="kunReading" class="reading-item"></div>
+          <div id="onReading" class="reading-item"></div>
+        </div>
+        <button id="nextQuizBtn" class="action-btn">次へ</button>
+      </div>
+    </div>
+
+    <!-- 書き練習 -->
+    <div id="writeQuiz" class="quiz-content" style="display: none;">
+      <div class="kanji-display">
+        <div id="writeKanji" class="kanji-large-write">漢</div>
+      </div>
+      <p class="instruction">ノートに書いて練習してください</p>
+      <button id="nextWriteQuizBtn" class="action-btn">次へ</button>
+    </div>
+  </div>
+
+  <!-- 学習履歴画面 -->
+  <div id="historyScreen" class="screen" style="display: none;">
+    <div class="history-header">
+      <h2>学習履歴</h2>
+      <button id="backToSettingFromHistoryBtn" class="back-btn">戻る</button>
+    </div>
+    <div id="historyContent" class="history-content">
+      <p>学習履歴がありません</p>
+    </div>
+  </div>
+
+  <!-- 10問完了画面 -->
+  <div id="completionScreen" class="screen" style="display: none;">
+    <div class="completion-content">
+      <h2>お疲れ様でした！</h2>
+      <p id="completionMessage">10問を出題しました</p>
+      <div id="completedKanjis" class="completed-list"></div>
+      <div class="completion-buttons">
+        <button id="restartBtn" class="action-btn">もう一度練習する</button>
+        <button id="goToHistoryBtn" class="action-btn">学習履歴を見る</button>
+        <button id="backToSettingFromCompletionBtn" class="back-btn">設定に戻る</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .tankanji-app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+  }
+
+  .screen {
+    display: none;
+  }
+
+  .screen.active {
+    display: block;
+  }
+
+  .setting-section {
+    margin: 20px 0;
+  }
+
+  .setting-section label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+
+  .setting-section select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 2px solid #007bff;
+    border-radius: 5px;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .option-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px;
+    font-size: 1rem;
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .option-btn:hover {
+    background-color: #e0e0e0;
+  }
+
+  .option-btn.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+  }
+
+  .start-btn {
+    padding: 15px;
+    font-size: 1.2rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .start-btn:hover {
+    background-color: #218838;
+  }
+
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .quiz-count {
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+
+  .back-btn {
+    padding: 8px 12px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .back-btn:hover {
+    background-color: #5a6268;
+  }
+
+  .kanji-display {
+    text-align: center;
+    margin: 30px 0;
+  }
+
+  .kanji-large,
+  .kanji-large-write {
+    font-size: 8rem;
+    font-weight: bold;
+    font-family: 'Hiragino Mincho ProN', 'Noto Serif JP', serif;
+  }
+
+  .action-btn {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .action-btn:hover {
+    background-color: #0056b3;
+  }
+
+  .answer-display {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-left: 4px solid #007bff;
+    border-radius: 3px;
+  }
+
+  .reading-list {
+    margin-bottom: 15px;
+  }
+
+  .reading-item {
+    padding: 8px 0;
+    font-size: 1.1rem;
+  }
+
+  .reading-item:first-child::before {
+    content: '訓読み: ';
+    font-weight: bold;
+  }
+
+  .reading-item:last-child::before {
+    content: '音読み: ';
+    font-weight: bold;
+  }
+
+  .instruction {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #666;
+    margin: 20px 0;
+  }
+
+  .completion-content {
+    text-align: center;
+  }
+
+  .completed-list {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+  }
+
+  .completion-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .history-content {
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+  }
+
+  @media (max-width: 600px) {
+    .kanji-large,
+    .kanji-large-write {
+      font-size: 5rem;
+    }
+
+    .button-group {
+      flex-direction: column;
+    }
+
+    .option-btn {
+      min-width: auto;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tankanjiBuddy.js') }}"></script>
+{% endblock %}

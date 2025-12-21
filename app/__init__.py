@@ -35,13 +35,15 @@ def create_app(config_name='development'):
     from app.portal import portal_bp
     from app.kuku import kuku_bp
     from app.shisoku import shisoku_bp
+    from app.tankanji import tankanji_bp
     
     # ポータル画面（ルート）
     app.register_blueprint(portal_bp, url_prefix='/')
     
     # 各学習アプリ
-    app.register_blueprint(kuku_bp, url_prefix='/kuku')
-    app.register_blueprint(shisoku_bp, url_prefix='/shisoku')
+    app.register_blueprint(kuku_bp)
+    app.register_blueprint(shisoku_bp)
+    app.register_blueprint(tankanji_bp)
     
     # グローバルエラーハンドラ
     register_error_handlers(app)

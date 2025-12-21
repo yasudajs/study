@@ -23,6 +23,14 @@ def get_available_apps():
             'url': '/shisoku/',
             'level': '小学1～3年生'
         },
+        {
+            'id': 'tankanji',
+            'name': '単漢字練習',
+            'description': '漢字の読みと書きを練習します',
+            'icon': '/static/images/app_icons/tankanji.svg',
+            'url': '/tankanji/',
+            'level': '小学1～6年生'
+        },
         # 将来：わり算、たし算、ひき算アプリなど
         # {
         #     'id': 'warizan',

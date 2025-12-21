@@ -26,6 +26,7 @@ try:
     from app.portal import portal_bp
     from app.kuku import kuku_bp
     from app.shisoku import shisoku_bp
+    from app.tankanji import tankanji_bp
     from app.rireki import register_blueprint as register_rireki
     
     # ポータル画面（ルート）
@@ -34,6 +35,7 @@ try:
     # 各学習アプリ
     app.register_blueprint(kuku_bp, url_prefix='/kuku')
     app.register_blueprint(shisoku_bp, url_prefix='/shisoku')
+    app.register_blueprint(tankanji_bp, url_prefix='/tankanji')
     
     # 履歴管理アプリ
     register_rireki(app)
