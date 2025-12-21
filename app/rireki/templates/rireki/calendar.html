@@ -34,9 +34,6 @@
         <button class="btn btn-secondary" onclick="goBackToPortal()">
             ポータルに戻る
         </button>
-        <button class="btn btn-danger" onclick="clearAllHistory()">
-            すべての履歴を削除
-        </button>
     </div>
 </div>
 
@@ -246,15 +243,6 @@
         background: #545b62;
     }
 
-    .btn-danger {
-        background: #dc3545;
-        color: white;
-    }
-
-    .btn-danger:hover {
-        background: #c82333;
-    }
-
     @media (max-width: 600px) {
         .calendar-container {
             margin: 1rem;
@@ -409,10 +397,7 @@
                             <span>${record.level}の段（${record.mode === 'random' ? 'ランダム' : 'じゅんばん'}）</span>
                             <span style="font-size: 0.85rem; color: #999;">${record.time}</span>
                         </div>
-                        <div>正答率: <span class="${rateClass}">${record.correctRate}%</span></div>
-                        <div class="text-muted" style="font-size: 0.8rem; color: #999;">
-                            正解: ${record.correctCount}/${record.totalCount}
-                        </div>
+                        <div>正答率: <span class="${rateClass}">${record.correctRate}%</span>${record.correctRate === 100 ? ' 💮' : ''}</div>
                     </div>
                 `;
             });
@@ -441,10 +426,7 @@
                             <span>${operatorName}（${difficultyName}）</span>
                             <span style="font-size: 0.85rem; color: #999;">${record.time}</span>
                         </div>
-                        <div>正答率: <span class="${rateClass}">${record.correctRate}%</span></div>
-                        <div class="text-muted" style="font-size: 0.8rem; color: #999;">
-                            正解: ${record.correctCount}/${record.totalCount}
-                        </div>
+                        <div>正答率: <span class="${rateClass}">${record.correctRate}%</span>${record.correctRate === 100 ? ' 💮' : ''}</div>
                     </div>
                 `;
             });
@@ -467,16 +449,6 @@
 
     function goBackToPortal() {
         window.location.href = '/';
-    }
-
-    function clearAllHistory() {
-        if (confirm('すべての学習履歴を削除してもよろしいですか？\nこの操作は取り消せません。')) {
-            if (confirm('本当に削除しますか？')) {
-                historyManager.clearHistory();
-                renderCalendar();
-                displayDetails(selectedDate || historyManager.getTodayDate());
-            }
-        }
     }
 </script>
 {% endblock %}
