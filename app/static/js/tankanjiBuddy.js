@@ -237,8 +237,32 @@ class TankanjiBuddy {
     document.getElementById('answerDisplay').style.display = 'block';
     document.getElementById('showAnswerBtn').style.display = 'block';
     document.getElementById('nextQuizBtn').style.display = 'none';
-    document.getElementById('kunReading').textContent = '';
-    document.getElementById('onReading').textContent = '';
+
+    // 出題時点で「音読み:」「訓読み:」は表示し、値だけ空にする（答えボタンで値が入る）
+    const kunReadingEl = document.getElementById('kunReading');
+    const onReadingEl = document.getElementById('onReading');
+    if (kunReadingEl) {
+      kunReadingEl.textContent = '';
+      kunReadingEl.style.display = 'block';
+    }
+    if (onReadingEl) {
+      onReadingEl.textContent = '';
+      onReadingEl.style.display = 'block';
+    }
+
+    // ヒントは出題時点で表示
+    const kunReadingHint = question.ヒント訓読み || '';
+    const onReadingHint = question.ヒント音読み || '';
+    const kunHintEl = document.getElementById('kunReadingHint');
+    const onHintEl = document.getElementById('onReadingHint');
+    if (kunHintEl) {
+      kunHintEl.textContent = kunReadingHint;
+      kunHintEl.style.display = kunReadingHint ? 'block' : 'none';
+    }
+    if (onHintEl) {
+      onHintEl.textContent = onReadingHint;
+      onHintEl.style.display = onReadingHint ? 'block' : 'none';
+    }
 
     this.sessionHistory.push(question);
   }
@@ -248,8 +272,15 @@ class TankanjiBuddy {
     const kunReading = question.訓読み || '（なし）';
     const onReading = question.音読み || '（なし）';
 
-    document.getElementById('kunReading').textContent = kunReading;
-    document.getElementById('onReading').textContent = onReading;
+    const kunReadingEl = document.getElementById('kunReading');
+    const onReadingEl = document.getElementById('onReading');
+    if (kunReadingEl) {
+      kunReadingEl.textContent = kunReading;
+    }
+    if (onReadingEl) {
+      onReadingEl.textContent = onReading;
+    }
+    
     document.getElementById('answerDisplay').style.display = 'block';
     document.getElementById('nextQuizBtn').style.display = 'inline-flex';
     document.getElementById('showAnswerBtn').style.display = 'none';

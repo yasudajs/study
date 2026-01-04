@@ -60,7 +60,9 @@
           <div id="answerDisplay" class="answer-display" style="display: block;">
             <div class="reading-list">
               <div id="onReading" class="reading-item"></div>
+              <div id="onReadingHint" class="reading-hint"></div>
               <div id="kunReading" class="reading-item"></div>
+              <div id="kunReadingHint" class="reading-hint"></div>
             </div>
           </div>
           <div class="action-row">
@@ -346,14 +348,31 @@
     font-size: 1.1rem;
   }
 
-  .reading-item:first-child::before {
+  #onReading::before {
     content: '音読み: ';
     font-weight: bold;
   }
 
-  .reading-item:last-child::before {
+  #kunReading::before {
     content: '訓読み: ';
     font-weight: bold;
+  }
+
+  #onReadingHint::before {
+    content: '音読みヒント: ';
+    font-weight: bold;
+  }
+
+  #kunReadingHint::before {
+    content: '訓読みヒント: ';
+    font-weight: bold;
+  }
+
+  .reading-hint {
+    padding: 4px 0 12px 0;
+    font-size: 0.95rem;
+    color: #333;
+    margin-left: 8px;
   }
 
   .instruction {
